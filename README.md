@@ -15,6 +15,36 @@ It grew out of a labeling agent I run on my own Gmail every morning. That one ha
 
 Design rules and the full loop: [docs/architecture.md](docs/architecture.md).
 
+## Walkthrough
+
+One real run on the demo inbox. Nothing below is staged: the categories, labels, reasons and proposals are what the agent produced.
+
+**1. Start.** No label list to configure. The agent starts by reading the inbox.
+
+![Intro screen with the three steps and a "Read the demo inbox" button](docs/screenshots/1-intro.png)
+
+**2. Set up.** It proposed nine categories for this staffing inbox, in priority order, and asked where it wasn't sure, such as a lookalike payroll domain or a client politely closing two roles. I told it which categories should be high-stakes, and it changed exactly that.
+
+![Proposed categories with high-stakes switches, and the onboarding chat](docs/screenshots/2-setup.png)
+
+**3. Label.** Each email gets one label or a skip. The phishing email and an email that mixed a pay question with a complaint were left for a human. Anything urgent goes to a short "Needs your eyes" list.
+
+![Inbox with a label sidebar, counts, and labeled emails](docs/screenshots/3-inbox.png)
+
+**4. Check its reasoning.** Every label quotes the sentence it was based on and shows its confidence against that label's threshold. This one is wrong: the client is ending the work, so it belongs in Escalation. One dropdown fixes it.
+
+![An email opened, showing the reason, a confidence bar and the correction dropdown](docs/screenshots/4-email-detail.png)
+
+**5. Learn.** The correction is used as an example on the next run straight away. The agent also proposed two description changes, shown as before and after, and neither applies until approved.
+
+![Corrections and the agent's proposed rule changes](docs/screenshots/5-learn.png)
+
+**6. Run log.** Every model call, with the prompt version, tokens, cost and time.
+
+![Run log table](docs/screenshots/6-run-log.png)
+
+*These screenshots come from a local run through the Claude Code CLI dev provider (`LLM_PROVIDER=claude-cli`). Its input token counts include the CLI's own cached context, so they overstate the agent's prompts.*
+
 ## Eval
 
 ```

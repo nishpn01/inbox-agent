@@ -1,5 +1,5 @@
 import { Activity, ArrowRight, Check, CircleSlash, Eye, Inbox as InboxIcon, Lightbulb, Loader2, RotateCcw, Send, ShieldCheck, Sparkles, Tags } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import demoInbox from '../data/demo-inbox.json';
 import { applyProposal, toActions } from '../lib/agent/rules.ts';
 import type { Category, ChatTurn, Correction, Decision, DiscoverResult, Email, Proposal, RunLogEntry, Taxonomy } from '../lib/agent/types.ts';
@@ -279,6 +279,10 @@ const SUGGESTIONS = ['Fewer categories, please', 'Which ones should be high-stak
 function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string) => void; onToggleHighStakes: (n: string) => void; onApprove: () => void; onRediscover: () => void }) {
   const { s, color } = props;
   const [msg, setMsg] = useState('');
+  const turnsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    turnsRef.current?.scrollTo({ top: turnsRef.current.scrollHeight });
+  }, [s.chat.length]);
   const info = (name: string) => s.discovery?.categories.find((c) => c.name === name);
   const examples = (name: string) => (info(name)?.exampleIds ?? []).map((id) => INBOX.find((e) => e.id === id)?.subject).filter(Boolean);
   const send = (m: string) => {
@@ -333,7 +337,7 @@ function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string
 
       <aside className="chat card">
         <h2>Talk to the agent</h2>
-        <div className="turns">
+        <div className="turns" ref={turnsRef}>
           {s.chat.map((t, i) => (
             <div key={i} className={`turn ${t.role}`}>
               {t.text}

@@ -146,7 +146,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .switch input:focus-visible + .track { outline: 2px solid var(--ring); outline-offset: 2px; }
 
 .chat { padding: 16px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 16px; }
-.turns { display: flex; flex-direction: column; gap: 8px; max-height: 52dvh; overflow-y: auto; }
+.turns { display: flex; flex-direction: column; gap: 8px; max-height: calc(100dvh - 380px); min-height: 160px; overflow-y: auto; }
 .turn { padding: 10px 12px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; max-width: 92%; }
 .turn.agent { background: var(--surface-2); }
 .turn.user { background: var(--primary); color: var(--on-primary); align-self: flex-end; }
