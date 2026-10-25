@@ -21,6 +21,7 @@ const { decisions, log } = await classify(inbox.filter((e) => cases.has(e.id)), 
 
 let correct = 0, hsLabeled = 0, hsCorrect = 0, eyesExpected = 0, eyesCaught = 0, eyesFlagged = 0, skips = 0;
 const misses: string[] = [];
+const eyesMissed: string[] = [];
 for (const d of decisions) {
   const c = cases.get(d.emailId)!;
   const got = d.label ?? 'SKIP';
@@ -36,6 +37,7 @@ for (const d of decisions) {
   if (c.needsEyes) {
     eyesExpected++;
     if (d.needsEyes) eyesCaught++;
+    else eyesMissed.push(`${d.emailId}  ${c.note ?? ''}`);
   }
 }
 
@@ -57,6 +59,7 @@ console.log(`  Needs-your-eyes precision ${pct(score.needsEyesPrecision)} (gate 
 console.log(`  Skipped                ${skips}`);
 console.log(`  Cost                   $${cost.toFixed(4)} across ${log.length} calls, ${log.reduce((s, l) => s + l.ms, 0) / 1000}s`);
 if (misses.length) console.log(`\nMisses:\n  ${misses.join('\n  ')}`);
+if (eyesMissed.length) console.log(`\nUrgent but not flagged:\n  ${eyesMissed.join('\n  ')}`);
 
 const failed = (Object.keys(GATES) as (keyof typeof GATES)[]).filter((k) => score[k] < GATES[k]);
 if (failed.length) {

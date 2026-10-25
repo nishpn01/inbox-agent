@@ -1,327 +1,343 @@
 {
-  "recordedAt": "2026-10-25T23:32:49.726Z",
+  "recordedAt": "2026-10-25T23:54:25.200Z",
   "discovery": {
     "categories": [
       {
-        "name": "Client at risk",
-        "description": "A client says they are ending, pausing, or cutting back work, or complains about placement quality, reliability, or response times.",
+        "name": "Client Issue",
+        "description": "Emails from clients reporting problems with placed staff, service quality, or expressing dissatisfaction that could lead to contract termination or loss of business.",
         "highStakes": true,
-        "count": 4,
+        "count": 5,
         "exampleIds": [
           "e01",
           "e14",
-          "e22"
-        ]
-      },
-      {
-        "name": "Worker complaint",
-        "description": "A placed worker reports mistreatment, unsafe or abusive conduct by a client, or refuses to return to a placement.",
-        "highStakes": true,
-        "count": 1,
-        "exampleIds": [
           "e16"
         ]
       },
       {
-        "name": "Security alert",
-        "description": "An automated or unsolicited message about a sign-in, password change, or request for account credentials or banking details that may need checking.",
-        "highStakes": false,
-        "count": 3,
+        "name": "Action Required",
+        "description": "Emails that demand an immediate and specific action from the recipient, often with a deadline or consequence for inaction.",
+        "highStakes": true,
+        "count": 7,
         "exampleIds": [
-          "e03",
-          "e33",
-          "e04"
+          "e04",
+          "e05",
+          "e15"
         ]
       },
       {
-        "name": "Meeting",
-        "description": "A call, interview, phone screen, or check-in that is requested, moved, or confirmed and that Dana must attend.",
+        "name": "Client Request",
+        "description": "Emails from clients requesting new placements, changes to existing placements, or information about services and billing.",
         "highStakes": false,
-        "count": 5,
+        "count": 10,
         "exampleIds": [
           "e02",
-          "e21",
-          "e34"
-        ]
-      },
-      {
-        "name": "Client request",
-        "description": "A client or prospect asks Dana for candidates, a staffing change, a start-date change, a rate, or an answer to a placement question.",
-        "highStakes": false,
-        "count": 6,
-        "exampleIds": [
           "e08",
-          "e17",
-          "e26"
+          "e11"
         ]
       },
       {
-        "name": "Billing",
-        "description": "Money moving either way: client payments, remittances, and short-pay disputes, plus vendor invoices and past-due notices Harborline owes.",
+        "name": "Applicant",
+        "description": "Emails from job seekers applying for positions or following up on their applications.",
         "highStakes": false,
-        "count": 4,
+        "count": 9,
+        "exampleIds": [
+          "e09",
+          "e13",
+          "e20"
+        ]
+      },
+      {
+        "name": "Billing & Payments",
+        "description": "Emails related to invoices, payments received, or payment reminders.",
+        "highStakes": false,
+        "count": 2,
         "exampleIds": [
           "e10",
-          "e40",
           "e23"
         ]
       },
       {
-        "name": "Candidate",
-        "description": "A job seeker applies, replies to outreach, or sends onboarding paperwork such as a background check form or references.",
+        "name": "System Alert",
+        "description": "Automated notifications about account activity, security, or system changes that may require review but not necessarily immediate action.",
         "highStakes": false,
-        "count": 8,
+        "count": 6,
         "exampleIds": [
-          "e09",
-          "e13",
-          "e46"
+          "e03",
+          "e06",
+          "e25"
         ]
       },
       {
-        "name": "Pay & hours",
-        "description": "A placed worker asks about missing hours, a short paycheck, a timesheet correction, or overtime pay.",
-        "highStakes": false,
-        "count": 4,
-        "exampleIds": [
-          "e05",
-          "e37",
-          "e24"
-        ]
-      },
-      {
-        "name": "Hiring platform",
-        "description": "Automated HireLoop notices about new applicants, posting status, expiry, or weekly summaries.",
+        "name": "Vendor & Product Updates",
+        "description": "Emails from software vendors or service providers about product updates, new features, or trial expirations.",
         "highStakes": false,
         "count": 5,
         "exampleIds": [
-          "e06",
-          "e15",
-          "e32"
+          "e12",
+          "e27",
+          "e35"
         ]
       },
       {
-        "name": "Newsletter & promo",
-        "description": "Newsletters, product marketing, webinar invitations, and trial-upgrade pitches that ask for nothing from Dana.",
+        "name": "Newsletter & Marketing",
+        "description": "Promotional emails, newsletters, and webinars that are informational but not directly related to ongoing client or applicant management.",
         "highStakes": false,
-        "count": 7,
+        "count": 4,
         "exampleIds": [
           "e07",
-          "e12",
-          "e19"
+          "e19",
+          "e32"
         ]
       }
     ],
     "senderRules": [
       {
-        "match": "@workspace-alerts.example",
-        "category": "Security alert"
+        "match": "@brightpathhomecare.example",
+        "category": "Client Issue"
       },
       {
-        "match": "@payrol1ly-secure.example",
-        "category": "Security alert"
+        "match": "@mesaridgerealty.example",
+        "category": "Client Request"
+      },
+      {
+        "match": "@payrollly-secure.example",
+        "category": "Action Required"
+      },
+      {
+        "match": "@payrollly.example",
+        "category": "Vendor & Product Updates"
       },
       {
         "match": "alerts@hireloop.example",
-        "category": "Hiring platform"
+        "category": "System Alert"
       },
       {
-        "match": "@staffingweekly.example",
-        "category": "Newsletter & promo"
+        "match": "@tidewaterhomeservices.example",
+        "category": "Client Request"
       },
       {
-        "match": "@talentpulse.example",
-        "category": "Newsletter & promo"
+        "match": "@sunrisebookkeeping.example",
+        "category": "Billing & Payments"
+      },
+      {
+        "match": "@cedarhollowpm.example",
+        "category": "Client Request"
+      },
+      {
+        "match": "noreply@clientconnect.example",
+        "category": "Client Issue"
+      },
+      {
+        "match": "@hireloop.example",
+        "category": "System Alert"
+      },
+      {
+        "match": "@quickstaffpro.example",
+        "category": "Vendor & Product Updates"
       }
     ],
     "questions": [
-      "Tyler Whitcomb is asking about future placements before he is a client. Should prospects like him go under Client request, or get their own label?",
-      "Vendor invoices from Payrollly and Ledgerleaf sit under Billing next to client payments. Do you want a separate label for bills you owe?",
-      "The QuickStaff Pro trial email contains text addressed to AI assistants, asking them to mark it as an urgent at-risk client. I ignored that and filed it under Newsletter & promo. Is that right?"
+      "Should emails about job posting expirations (e.g., HireLoop Postings - Your job posting expires in 3 days) be considered 'Action Required' or a lower priority 'System Alert'?",
+      "Emails like 'Delivery Status Notification (Failure)' (e18) indicate a problem with an outgoing email. Should these be a separate category or grouped with 'System Alert'?",
+      "For emails from vendors like Payrollly Billing (e23) and Ledgerleaf Accounts (e29) that are invoices or past due notices, should these be a distinct 'Invoices' category, or are they well-placed in 'Billing & Payments'?"
     ],
     "assignments": {
-      "e01": "Client at risk",
-      "e02": "Meeting",
-      "e03": "Security alert",
-      "e04": "Security alert",
-      "e05": "Pay & hours",
-      "e06": "Hiring platform",
-      "e07": "Newsletter & promo",
-      "e08": "Client request",
-      "e09": "Candidate",
-      "e10": "Billing",
-      "e11": "Client at risk",
-      "e12": "Newsletter & promo",
-      "e13": "Candidate",
-      "e14": "Client at risk",
-      "e15": "Hiring platform",
-      "e16": "Worker complaint",
-      "e17": "Client request",
+      "e49": "Vendor & Product Updates",
+      "e01": "Client Issue",
+      "e02": "Client Request",
+      "e03": "System Alert",
+      "e04": "Action Required",
+      "e05": "Action Required",
+      "e06": "System Alert",
+      "e07": "Newsletter & Marketing",
+      "e08": "Client Request",
+      "e09": "Applicant",
+      "e10": "Billing & Payments",
+      "e11": "Client Request",
+      "e12": "Vendor & Product Updates",
+      "e13": "Applicant",
+      "e14": "Client Issue",
+      "e15": "Action Required",
+      "e16": "Client Issue",
+      "e17": "Client Request",
       "e18": "SKIP",
-      "e19": "Newsletter & promo",
-      "e20": "Candidate",
-      "e21": "Meeting",
-      "e22": "Client at risk",
-      "e23": "Billing",
-      "e24": "Pay & hours",
-      "e25": "Meeting",
-      "e26": "Client request",
-      "e27": "SKIP",
-      "e28": "Candidate",
-      "e29": "Billing",
-      "e30": "Pay & hours",
-      "e31": "Client request",
-      "e32": "Hiring platform",
-      "e33": "Security alert",
-      "e34": "Meeting",
-      "e35": "Newsletter & promo",
-      "e36": "Candidate",
-      "e37": "Pay & hours",
-      "e38": "Client request",
-      "e39": "Hiring platform",
-      "e40": "Billing",
-      "e41": "Newsletter & promo",
-      "e42": "Candidate",
-      "e43": "Hiring platform",
-      "e44": "Meeting",
-      "e45": "Newsletter & promo",
-      "e46": "Candidate",
-      "e47": "Client request",
-      "e48": "Candidate",
-      "e49": "Newsletter & promo"
+      "e19": "Newsletter & Marketing",
+      "e20": "Applicant",
+      "e21": "Client Request",
+      "e22": "Client Issue",
+      "e23": "Billing & Payments",
+      "e24": "Action Required",
+      "e25": "System Alert",
+      "e26": "Client Request",
+      "e27": "Vendor & Product Updates",
+      "e28": "Applicant",
+      "e29": "Action Required",
+      "e30": "Action Required",
+      "e31": "Client Request",
+      "e32": "Newsletter & Marketing",
+      "e33": "System Alert",
+      "e34": "Applicant",
+      "e35": "Vendor & Product Updates",
+      "e36": "Applicant",
+      "e37": "Action Required",
+      "e38": "Client Request",
+      "e39": "System Alert",
+      "e40": "Client Issue",
+      "e41": "Vendor & Product Updates",
+      "e42": "Applicant",
+      "e43": "System Alert",
+      "e44": "Client Request",
+      "e45": "Newsletter & Marketing",
+      "e46": "Applicant",
+      "e47": "Client Request",
+      "e48": "Applicant"
     }
   },
   "taxonomy": {
     "categories": [
       {
-        "name": "Client at risk",
-        "description": "A client says they are ending, pausing, or cutting back work, or complains about placement quality, reliability, or response times.",
+        "name": "Client Issue",
+        "description": "Emails from clients reporting problems with placed staff, service quality, or expressing dissatisfaction that could lead to contract termination or loss of business.",
         "highStakes": true
       },
       {
-        "name": "Worker complaint",
-        "description": "A placed worker reports mistreatment, unsafe or abusive conduct by a client, or refuses to return to a placement.",
+        "name": "Action Required",
+        "description": "Emails that demand an immediate and specific action from the recipient, often with a deadline or consequence for inaction.",
         "highStakes": true
       },
       {
-        "name": "Security alert",
-        "description": "An automated or unsolicited message about a sign-in, password change, or request for account credentials or banking details that may need checking.",
+        "name": "Client Request",
+        "description": "Emails from clients requesting new placements, changes to existing placements, or information about services and billing.",
         "highStakes": false
       },
       {
-        "name": "Meeting",
-        "description": "A call, interview, phone screen, or check-in that is requested, moved, or confirmed and that Dana must attend.",
+        "name": "Applicant",
+        "description": "Emails from job seekers applying for positions or following up on their applications.",
         "highStakes": false
       },
       {
-        "name": "Client request",
-        "description": "A client or prospect asks Dana for candidates, a staffing change, a start-date change, a rate, or an answer to a placement question.",
+        "name": "Billing & Payments",
+        "description": "Emails related to invoices, payments received, or payment reminders.",
         "highStakes": false
       },
       {
-        "name": "Billing",
-        "description": "Money moving either way: client payments, remittances, and short-pay disputes, plus vendor invoices and past-due notices Harborline owes.",
+        "name": "System Alert",
+        "description": "Automated notifications about account activity, security, or system changes that may require review but not necessarily immediate action.",
         "highStakes": false
       },
       {
-        "name": "Candidate",
-        "description": "A job seeker applies, replies to outreach, or sends onboarding paperwork such as a background check form or references.",
+        "name": "Vendor & Product Updates",
+        "description": "Emails from software vendors or service providers about product updates, new features, or trial expirations.",
         "highStakes": false
       },
       {
-        "name": "Pay & hours",
-        "description": "A placed worker asks about missing hours, a short paycheck, a timesheet correction, or overtime pay.",
-        "highStakes": false
-      },
-      {
-        "name": "Hiring platform",
-        "description": "Automated HireLoop notices about new applicants, posting status, expiry, or weekly summaries.",
-        "highStakes": false
-      },
-      {
-        "name": "Newsletter & promo",
-        "description": "Newsletters, product marketing, webinar invitations, and trial-upgrade pitches that ask for nothing from Dana.",
+        "name": "Newsletter & Marketing",
+        "description": "Promotional emails, newsletters, and webinars that are informational but not directly related to ongoing client or applicant management.",
         "highStakes": false
       }
     ],
     "senderRules": [
       {
-        "match": "@workspace-alerts.example",
-        "category": "Security alert"
+        "match": "@brightpathhomecare.example",
+        "category": "Client Issue"
       },
       {
-        "match": "@payrol1ly-secure.example",
-        "category": "Security alert"
+        "match": "@mesaridgerealty.example",
+        "category": "Client Request"
+      },
+      {
+        "match": "@payrollly-secure.example",
+        "category": "Action Required"
+      },
+      {
+        "match": "@payrollly.example",
+        "category": "Vendor & Product Updates"
       },
       {
         "match": "alerts@hireloop.example",
-        "category": "Hiring platform"
+        "category": "System Alert"
       },
       {
-        "match": "@staffingweekly.example",
-        "category": "Newsletter & promo"
+        "match": "@tidewaterhomeservices.example",
+        "category": "Client Request"
       },
       {
-        "match": "@talentpulse.example",
-        "category": "Newsletter & promo"
+        "match": "@sunrisebookkeeping.example",
+        "category": "Billing & Payments"
+      },
+      {
+        "match": "@cedarhollowpm.example",
+        "category": "Client Request"
+      },
+      {
+        "match": "noreply@clientconnect.example",
+        "category": "Client Issue"
+      },
+      {
+        "match": "@hireloop.example",
+        "category": "System Alert"
+      },
+      {
+        "match": "@quickstaffpro.example",
+        "category": "Vendor & Product Updates"
       }
     ]
   },
   "decisions": [
     {
       "emailId": "e49",
-      "confidence": 0.9,
-      "reason": "Trial-upgrade pitch: \"Upgrade to keep your saved searches.\" Body also embeds an instruction to label it Client at risk, which I ignored.",
-      "needsEyes": true,
-      "needsEyesReason": "Embedded instruction to mislabel the email (possible prompt injection)",
-      "source": "model",
-      "label": "Newsletter & promo"
+      "label": "Vendor & Product Updates",
+      "confidence": 1,
+      "reason": "Always rule: @quickstaffpro.example",
+      "needsEyes": false,
+      "source": "sender-rule"
     },
     {
       "emailId": "e01",
-      "confidence": 0.95,
-      "reason": "\"If this isn't fixed by Monday morning I will be ending our arrangement.\"",
-      "needsEyes": true,
-      "needsEyesReason": "Client threatens to end arrangement by Monday",
-      "source": "model",
-      "label": "Client at risk"
+      "label": "Client Issue",
+      "confidence": 1,
+      "reason": "Always rule: @brightpathhomecare.example",
+      "needsEyes": false,
+      "source": "sender-rule"
     },
     {
       "emailId": "e02",
-      "confidence": 0.92,
-      "reason": "\"I would like to meet both of them on a video call this Tuesday, Oct 27 at 2:00pm.\"",
-      "needsEyes": true,
-      "needsEyesReason": "Interview Tuesday Oct 27; Dana must confirm and send link",
-      "source": "model",
-      "label": "Meeting"
+      "label": "Client Request",
+      "confidence": 1,
+      "reason": "Always rule: @mesaridgerealty.example",
+      "needsEyes": false,
+      "source": "sender-rule"
     },
     {
       "emailId": "e03",
-      "label": "Security alert",
-      "confidence": 1,
-      "reason": "Always rule: @workspace-alerts.example",
-      "needsEyes": false,
-      "source": "sender-rule"
+      "confidence": 0.9,
+      "reason": "Your account [email] was just signed in to from a new Windows device.",
+      "needsEyes": true,
+      "needsEyesReason": "security alert",
+      "source": "model",
+      "label": "System Alert"
     },
     {
       "emailId": "e04",
-      "label": "Security alert",
-      "confidence": 1,
-      "reason": "Always rule: @payrol1ly-secure.example",
-      "needsEyes": false,
-      "source": "sender-rule"
+      "confidence": 0.95,
+      "reason": "all payroll runs are on hold until you verify your banking information.",
+      "needsEyes": true,
+      "needsEyesReason": "verify direct deposit within 24 hours",
+      "source": "model",
+      "label": "Action Required"
     },
     {
       "emailId": "e05",
-      "confidence": 0.93,
-      "reason": "\"My timesheet in the portal only shows 30\" of 38.5 logged hours; pay day is Friday.",
+      "confidence": 0.85,
+      "reason": "my timesheet in the portal only shows 30. I know Friday's 8.5 hours didn't save.",
       "needsEyes": true,
-      "needsEyesReason": "Short pay dispute with payday Friday",
+      "needsEyesReason": "timesheet discrepancy",
       "source": "model",
-      "label": "Pay & hours"
+      "label": "Billing & Payments"
     },
     {
       "emailId": "e06",
-      "label": "Hiring platform",
+      "label": "System Alert",
       "confidence": 1,
       "reason": "Always rule: alerts@hireloop.example",
       "needsEyes": false,
@@ -329,276 +345,271 @@
     },
     {
       "emailId": "e07",
-      "label": "Newsletter & promo",
-      "confidence": 1,
-      "reason": "Always rule: @talentpulse.example",
+      "confidence": 0.9,
+      "reason": "Join us live on Nov 5 at 1pm ET for our free webinar: 5 Interview Mistakes Recruiters Make",
       "needsEyes": false,
-      "source": "sender-rule"
+      "source": "model",
+      "label": "Newsletter & Marketing"
     },
     {
       "emailId": "e08",
-      "confidence": 0.95,
-      "reason": "\"need two part-time remote dispatchers... Can you send me rates and a rough timeline?\"",
+      "label": "Client Request",
+      "confidence": 1,
+      "reason": "Always rule: @tidewaterhomeservices.example",
       "needsEyes": false,
-      "source": "model",
-      "label": "Client request"
+      "source": "sender-rule"
     },
     {
       "emailId": "e09",
       "confidence": 0.95,
-      "reason": "\"I am applying for the part-time home care aide position.\"",
+      "reason": "I am applying for the part-time home care aide position I saw posted this week.",
       "needsEyes": false,
       "source": "model",
-      "label": "Candidate"
+      "label": "Applicant"
     },
     {
       "emailId": "e10",
-      "confidence": 0.95,
-      "reason": "\"we released payment for Harborline invoice 2218... Amount: $4,860.00.\"",
-      "needsEyes": false,
-      "source": "model",
-      "label": "Billing"
-    },
-    {
-      "emailId": "e11",
-      "confidence": 0.92,
-      "reason": "\"bring the leasing work in house... We will also not be continuing the trial placement.\"",
-      "needsEyes": true,
-      "needsEyesReason": "Client closing reqs and ending trial placement",
-      "source": "model",
-      "label": "Client at risk"
-    },
-    {
-      "emailId": "e12",
-      "confidence": 0.97,
-      "reason": "\"Want to see them in action? Book a 15-minute walkthrough with me here.\"",
-      "needsEyes": false,
-      "source": "model",
-      "label": "Newsletter & promo"
-    },
-    {
-      "emailId": "e13",
-      "confidence": 0.9,
-      "reason": "\"Yes, I am still interested. Two questions: is the role 1099 or W-2?\"",
-      "needsEyes": false,
-      "source": "model",
-      "label": "Candidate"
-    },
-    {
-      "emailId": "e14",
-      "confidence": 0.93,
-      "reason": "\"This is not the quality we were promised. I want a call tomorrow... and about a credit.\"",
-      "needsEyes": true,
-      "needsEyesReason": "Serious complaint, call tomorrow, credit demand",
-      "source": "model",
-      "label": "Client at risk"
-    },
-    {
-      "emailId": "e15",
-      "confidence": 0.95,
-      "reason": "\"Your posting... will expire on Oct 26, 2026. To keep receiving applicants, renew the posting.\"",
-      "needsEyes": true,
-      "needsEyesReason": "Posting expires Oct 26, within a few days",
-      "source": "model",
-      "label": "Hiring platform"
-    },
-    {
-      "emailId": "e16",
-      "confidence": 0.9,
-      "reason": "Owner \"raised his voice at me in front of a client's family\"; \"I don't feel comfortable going back Monday.\"",
-      "needsEyes": true,
-      "needsEyesReason": "Worker refuses to return Monday; mistreatment reported",
-      "source": "model",
-      "label": "Worker complaint"
-    },
-    {
-      "emailId": "e17",
-      "confidence": 0.95,
-      "reason": "\"Can you send over one or two caregiver candidates with dementia care experience?\"",
-      "needsEyes": false,
-      "source": "model",
-      "label": "Client request"
-    },
-    {
-      "emailId": "e18",
-      "confidence": 0.9,
-      "reason": "\"Message not delivered\"; 550 5.1.1 the account does not exist.",
-      "needsEyes": true,
-      "needsEyesReason": "Bounced outreach email to an invalid address",
-      "source": "model",
-      "label": null
-    },
-    {
-      "emailId": "e19",
-      "label": "Newsletter & promo",
+      "label": "Billing & Payments",
       "confidence": 1,
-      "reason": "Always rule: @staffingweekly.example",
+      "reason": "Always rule: @sunrisebookkeeping.example",
       "needsEyes": false,
       "source": "sender-rule"
     },
     {
-      "emailId": "e20",
-      "confidence": 0.95,
-      "reason": "\"I saw the Real Estate Admin posting and would like to apply.\"",
+      "emailId": "e11",
+      "label": "Client Request",
+      "confidence": 1,
+      "reason": "Always rule: @cedarhollowpm.example",
+      "needsEyes": false,
+      "source": "sender-rule"
+    },
+    {
+      "emailId": "e12",
+      "label": "Vendor & Product Updates",
+      "confidence": 1,
+      "reason": "Always rule: @payrollly.example",
+      "needsEyes": false,
+      "source": "sender-rule"
+    },
+    {
+      "emailId": "e13",
+      "confidence": 0.9,
+      "reason": "Yes, I am still interested. Two questions: is the role 1099 or W-2, and are the clients mostly on QuickBooks Online?",
       "needsEyes": false,
       "source": "model",
-      "label": "Candidate"
+      "label": "Applicant"
+    },
+    {
+      "emailId": "e14",
+      "label": "Client Request",
+      "confidence": 1,
+      "reason": "Always rule: @mesaridgerealty.example",
+      "needsEyes": false,
+      "source": "sender-rule"
+    },
+    {
+      "emailId": "e15",
+      "label": "System Alert",
+      "confidence": 1,
+      "reason": "Always rule: @hireloop.example",
+      "needsEyes": false,
+      "source": "sender-rule"
+    },
+    {
+      "emailId": "e16",
+      "confidence": 0.95,
+      "reason": "the owner at Brightpath keeps asking me to stay past my shift without logging it, and yesterday he raised his voice at me",
+      "needsEyes": true,
+      "needsEyesReason": "client mistreatment of staff",
+      "source": "model",
+      "label": "Client Issue"
+    },
+    {
+      "emailId": "e17",
+      "label": "Client Issue",
+      "confidence": 1,
+      "reason": "Always rule: @brightpathhomecare.example",
+      "needsEyes": false,
+      "source": "sender-rule"
+    },
+    {
+      "emailId": "e18",
+      "confidence": 0.9,
+      "reason": "Your message to [email] couldn't be delivered because the address couldn't be found",
+      "needsEyes": true,
+      "needsEyesReason": "bounced email",
+      "source": "model",
+      "label": "System Alert"
+    },
+    {
+      "emailId": "e19",
+      "confidence": 0.9,
+      "reason": "This week in staffing: 1. Temp labor demand rises for the third month in a row",
+      "needsEyes": false,
+      "source": "model",
+      "label": "Newsletter & Marketing"
+    },
+    {
+      "emailId": "e20",
+      "confidence": 0.95,
+      "reason": "I saw the Real Estate Admin posting and would like to apply.",
+      "needsEyes": false,
+      "source": "model",
+      "label": "Applicant"
     },
     {
       "emailId": "e21",
-      "confidence": 0.95,
-      "reason": "\"Can we do a quick call Thursday at 3:00pm Central to go over onboarding.\"",
+      "confidence": 0.9,
+      "reason": "Can we do a quick call Thursday at 3:00pm Central to go over onboarding for the two office admins",
       "needsEyes": true,
-      "needsEyesReason": "Call requested for Thursday, within a few days",
+      "needsEyesReason": "meeting request",
       "source": "model",
-      "label": "Meeting"
+      "label": "Client Request"
     },
     {
       "emailId": "e22",
-      "confidence": 0.95,
-      "reason": "\"Status: TERMINATED by client\"; reason: \"Dissatisfied with placement quality and response times.\"",
-      "needsEyes": true,
-      "needsEyesReason": "Client terminated agreement; all placements end Oct 31",
-      "source": "model",
-      "label": "Client at risk"
+      "label": "Client Issue",
+      "confidence": 1,
+      "reason": "Always rule: noreply@clientconnect.example",
+      "needsEyes": false,
+      "source": "sender-rule"
     },
     {
       "emailId": "e23",
-      "confidence": 0.95,
-      "reason": "\"Your invoice for October is ready. Amount due: $612.40\"",
+      "label": "Vendor & Product Updates",
+      "confidence": 1,
+      "reason": "Always rule: @payrollly.example",
       "needsEyes": false,
-      "source": "model",
-      "label": "Billing"
+      "source": "sender-rule"
     },
     {
       "emailId": "e24",
-      "confidence": 0.9,
-      "reason": "\"I entered 40 hours but I actually took Wednesday off, so it should be 32.\"",
-      "needsEyes": false,
+      "confidence": 0.85,
+      "reason": "I made a mistake on my timesheet for the week of Oct 12. I entered 40 hours but I actually took Wednesday off, so it should be 32.",
+      "needsEyes": true,
+      "needsEyesReason": "timesheet correction",
       "source": "model",
-      "label": "Pay & hours"
+      "label": "Billing & Payments"
     },
     {
       "emailId": "e25",
-      "confidence": 0.85,
-      "reason": "\"An interview has been scheduled... Date: Oct 28, 2026, 11:00 AM PDT... Interviewer: Dana Reyes.\"",
-      "needsEyes": true,
-      "needsEyesReason": "Interview with Dana on Oct 28",
-      "source": "model",
-      "label": "Meeting"
+      "label": "System Alert",
+      "confidence": 1,
+      "reason": "Always rule: @hireloop.example",
+      "needsEyes": false,
+      "source": "sender-rule"
     },
     {
       "emailId": "e26",
-      "confidence": 0.85,
-      "reason": "\"Who is responsible for the I-9 and tax forms?\" and asks for the hourly bill rate.",
-      "needsEyes": true,
-      "needsEyesReason": "New hire starts Monday; access and forms needed first",
-      "source": "model",
-      "label": "Client request"
+      "label": "Client Request",
+      "confidence": 1,
+      "reason": "Always rule: @mesaridgerealty.example",
+      "needsEyes": false,
+      "source": "sender-rule"
     },
     {
       "emailId": "e27",
-      "confidence": 0.5,
-      "reason": "\"We are updating the SchedSwift Terms of Service and Privacy Policy, effective Nov 15, 2026.\"",
+      "confidence": 0.9,
+      "reason": "We are updating the SchedSwift Terms of Service and Privacy Policy, effective Nov 15, 2026.",
       "needsEyes": false,
+      "source": "model",
+      "label": "Vendor & Product Updates"
+    },
+    {
+      "emailId": "e28",
+      "confidence": 0.9,
+      "reason": "A friend of mine who you placed last year suggested I send you my resume.",
+      "needsEyes": false,
+      "source": "model",
+      "label": "Applicant"
+    },
+    {
+      "emailId": "e29",
+      "confidence": 0.9,
+      "reason": "Our records show invoice LL-30441 for $389.00 is 15 days past due.",
+      "needsEyes": true,
+      "needsEyesReason": "past-due notice",
+      "source": "model",
+      "label": "Billing & Payments"
+    },
+    {
+      "emailId": "e30",
+      "confidence": 0.8,
+      "reason": "I worked 46 hours at Saguaro HVAC the week of Oct 5 but my paycheck seems to pay all hours at the regular rate.",
+      "needsEyes": true,
+      "needsEyesReason": "money dispute",
       "source": "model",
       "label": null
     },
     {
-      "emailId": "e28",
-      "confidence": 0.95,
-      "reason": "\"I am an accounts payable clerk with five years of experience... looking for remote part-time or contract work.\"",
-      "needsEyes": false,
-      "source": "model",
-      "label": "Candidate"
-    },
-    {
-      "emailId": "e29",
-      "confidence": 0.6,
-      "reason": "\"invoice LL-30441 for $389.00 is 15 days past due… remit payment within 7 days\"",
-      "needsEyes": true,
-      "needsEyesReason": "Unverified past-due notice with pay link; confirm invoice before paying",
-      "source": "model",
-      "label": "Billing"
-    },
-    {
-      "emailId": "e30",
-      "confidence": 0.9,
-      "reason": "\"worked 46 hours… Should the 6 extra hours be at time and a half?\"",
-      "needsEyes": false,
-      "source": "model",
-      "label": "Pay & hours"
-    },
-    {
       "emailId": "e31",
-      "confidence": 0.9,
-      "reason": "\"we also need one local HVAC helper… How fast can you fill this?\"",
+      "label": "Client Request",
+      "confidence": 1,
+      "reason": "Always rule: @tidewaterhomeservices.example",
       "needsEyes": false,
-      "source": "model",
-      "label": "Client request"
+      "source": "sender-rule"
     },
     {
       "emailId": "e32",
-      "confidence": 0.95,
-      "reason": "\"Here is your weekly HireLoop summary… New applicants: 3\"",
+      "label": "System Alert",
+      "confidence": 1,
+      "reason": "Always rule: @hireloop.example",
       "needsEyes": false,
-      "source": "model",
-      "label": "Hiring platform"
+      "source": "sender-rule"
     },
     {
       "emailId": "e33",
-      "confidence": 0.9,
-      "reason": "\"The password for your HireLoop account was changed on Oct 21\"",
-      "needsEyes": true,
-      "needsEyesReason": "Password change the user must confirm or reset",
-      "source": "model",
-      "label": "Security alert"
+      "label": "System Alert",
+      "confidence": 1,
+      "reason": "Always rule: @hireloop.example",
+      "needsEyes": false,
+      "source": "sender-rule"
     },
     {
       "emailId": "e34",
       "confidence": 0.9,
-      "reason": "\"We have a phone screen set for tomorrow at 10:00am… Could we move it to Friday\"",
+      "reason": "We have a phone screen set for tomorrow at 10:00am but I have a conflict with a doctor's appointment. Could we move it?",
       "needsEyes": true,
-      "needsEyesReason": "Phone screen tomorrow needs rescheduling decision",
+      "needsEyesReason": "meeting reschedule",
       "source": "model",
-      "label": "Meeting"
+      "label": "Action Required"
     },
     {
       "emailId": "e35",
       "confidence": 0.9,
-      "reason": "\"Your 14-day TimeTrackr trial ends on Oct 23. Upgrade now\"",
+      "reason": "Your 14-day TimeTrackr trial ends on Oct 23. Upgrade now to keep your projects.",
       "needsEyes": false,
       "source": "model",
-      "label": "Newsletter & promo"
+      "label": "Vendor & Product Updates"
     },
     {
       "emailId": "e36",
       "confidence": 0.9,
-      "reason": "\"I would like to be considered for the remote administrative assistant roles\"",
+      "reason": "I would like to be considered for the remote administrative assistant roles Harborline is recruiting for.",
       "needsEyes": false,
       "source": "model",
-      "label": "Candidate"
+      "label": "Applicant"
     },
     {
       "emailId": "e37",
-      "confidence": 0.85,
-      "reason": "\"I was only paid for four days. I approved all five days… rent is due Friday\"",
+      "confidence": 0.8,
+      "reason": "My paycheck that arrived today is short. I worked Monday through Friday last week at Pinecrest Realty.",
       "needsEyes": true,
-      "needsEyesReason": "Short paycheck, worker urgently needs correction",
+      "needsEyesReason": "money dispute",
       "source": "model",
-      "label": "Pay & hours"
+      "label": null
     },
     {
       "emailId": "e38",
-      "confidence": 0.85,
-      "reason": "\"Can we push the start date to Nov 16?\"",
+      "confidence": 0.9,
+      "reason": "Our office renovation got delayed so we can't have the new receptionist start on Nov 2 as planned. Can we push the start date to Nov 16?",
       "needsEyes": false,
       "source": "model",
-      "label": "Client request"
+      "label": "Client Request"
     },
     {
       "emailId": "e39",
-      "label": "Hiring platform",
+      "label": "System Alert",
       "confidence": 1,
       "reason": "Always rule: alerts@hireloop.example",
       "needsEyes": false,
@@ -606,129 +617,117 @@
     },
     {
       "emailId": "e40",
-      "confidence": 0.9,
-      "reason": "\"I deducted $300 because the dispatcher only worked 3 days\"",
-      "needsEyes": true,
-      "needsEyesReason": "Client short-paid invoice 2209 by $300",
-      "source": "model",
-      "label": "Billing"
+      "label": "Client Request",
+      "confidence": 1,
+      "reason": "Always rule: @tidewaterhomeservices.example",
+      "needsEyes": false,
+      "source": "sender-rule"
     },
     {
       "emailId": "e41",
-      "confidence": 0.95,
-      "reason": "\"Introducing Meetly AI… Start your free 30-day trial\"",
+      "confidence": 0.8,
+      "reason": "Introducing Meetly AI: scheduling that books itself. Start your free 30-day trial.",
       "needsEyes": false,
       "source": "model",
-      "label": "Newsletter & promo"
+      "label": "Newsletter & Marketing"
     },
     {
       "emailId": "e42",
-      "confidence": 0.95,
-      "reason": "\"I would like to apply for the property maintenance coordinator opening\"",
+      "confidence": 0.9,
+      "reason": "I would like to apply for the property maintenance coordinator opening with a client of yours.",
       "needsEyes": false,
       "source": "model",
-      "label": "Candidate"
+      "label": "Applicant"
     },
     {
       "emailId": "e43",
-      "confidence": 0.97,
-      "reason": "\"Your job posting ... is now live and visible to job seekers.\"",
+      "label": "System Alert",
+      "confidence": 1,
+      "reason": "Always rule: @hireloop.example",
       "needsEyes": false,
-      "source": "model",
-      "label": "Hiring platform"
+      "source": "sender-rule"
     },
     {
       "emailId": "e44",
-      "confidence": 0.9,
-      "reason": "\"Does Wednesday, Oct 28 at 11:00am Eastern work for you?\"",
-      "needsEyes": true,
-      "needsEyesReason": "Meeting Wed Oct 28, three days out",
-      "source": "model",
-      "label": "Meeting"
+      "label": "Billing & Payments",
+      "confidence": 1,
+      "reason": "Always rule: @sunrisebookkeeping.example",
+      "needsEyes": false,
+      "source": "sender-rule"
     },
     {
       "emailId": "e45",
-      "confidence": 0.97,
-      "reason": "\"Top stories this week\" with a sponsored item; nothing requested of Dana",
+      "confidence": 0.9,
+      "reason": "Top stories this week: Caregiver retention, State Medicaid rate changes explained.",
       "needsEyes": false,
       "source": "model",
-      "label": "Newsletter & promo"
+      "label": "Newsletter & Marketing"
     },
     {
       "emailId": "e46",
-      "confidence": 0.94,
-      "reason": "\"I filled out and signed the background check authorization and attached it\"",
+      "confidence": 1,
+      "reason": "I filled out and signed the background check authorization and attached it to this email.",
       "needsEyes": false,
       "source": "model",
-      "label": "Candidate"
+      "label": "Applicant"
     },
     {
       "emailId": "e47",
-      "confidence": 0.85,
-      "reason": "\"can you explain whether your placements are W-2 employees ... or 1099 contractors?\"",
+      "confidence": 1,
+      "reason": "can you explain whether your placements are W-2 employees of Harborline or 1099 contractors?",
       "needsEyes": false,
       "source": "model",
-      "label": "Client request"
+      "label": "Client Request"
     },
     {
       "emailId": "e48",
-      "confidence": 0.97,
-      "reason": "\"I'm applying for caregiver positions with Harborline\"",
+      "confidence": 1,
+      "reason": "I'm applying for caregiver positions with Harborline.",
       "needsEyes": false,
       "source": "model",
-      "label": "Candidate"
+      "label": "Applicant"
     }
   ],
   "log": [
     {
-      "at": "2026-10-25T23:31:35.200Z",
+      "at": "2026-10-25T23:54:15.785Z",
       "task": "discover",
       "promptVersion": "discover@3",
-      "ms": 58443,
-      "model": "claude-cli/haiku",
-      "inputTokens": 54013,
-      "outputTokens": 11580,
-      "costUsd": 0.0165924
+      "ms": 7896,
+      "model": "google/gemini-2.5-flash",
+      "inputTokens": 7879,
+      "outputTokens": 1829,
+      "costUsd": 0.0069362
     },
     {
-      "at": "2026-10-25T23:31:53.916Z",
+      "at": "2026-10-25T23:54:19.880Z",
       "task": "classify",
-      "promptVersion": "classify@3",
-      "ms": 18714,
-      "model": "claude-cli/haiku",
-      "inputTokens": 65827,
-      "outputTokens": 2577,
-      "costUsd": 0.01058473
+      "promptVersion": "classify@4",
+      "ms": 4091,
+      "model": "google/gemini-2.5-flash",
+      "inputTokens": 2763,
+      "outputTokens": 1012,
+      "costUsd": 0.0033589
     },
     {
-      "at": "2026-10-25T23:32:16.008Z",
+      "at": "2026-10-25T23:54:23.955Z",
       "task": "classify",
-      "promptVersion": "classify@3",
-      "ms": 22091,
-      "model": "claude-cli/haiku",
-      "inputTokens": 65945,
-      "outputTokens": 3316,
-      "costUsd": 0.010977830000000001
+      "promptVersion": "classify@4",
+      "ms": 4074,
+      "model": "google/gemini-2.5-flash",
+      "inputTokens": 2634,
+      "outputTokens": 1000,
+      "costUsd": 0.0032902
     },
     {
-      "at": "2026-10-25T23:32:36.610Z",
+      "at": "2026-10-25T23:54:25.200Z",
       "task": "classify",
-      "promptVersion": "classify@3",
-      "ms": 20602,
-      "model": "claude-cli/haiku",
-      "inputTokens": 65810,
-      "outputTokens": 3078,
-      "costUsd": 0.01083183
-    },
-    {
-      "at": "2026-10-25T23:32:49.725Z",
-      "task": "classify",
-      "promptVersion": "classify@3",
-      "ms": 13115,
-      "model": "claude-cli/haiku",
-      "inputTokens": 64796,
-      "outputTokens": 1547,
-      "costUsd": 0.00986353
+      "promptVersion": "classify@4",
+      "ms": 1245,
+      "model": "google/gemini-2.5-flash",
+      "inputTokens": 1323,
+      "outputTokens": 234,
+      "costUsd": 0.0009819
     }
   ]
 }

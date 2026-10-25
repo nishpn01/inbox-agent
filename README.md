@@ -21,20 +21,22 @@ Open the [demo](https://inbox-agent-tan.vercel.app) and press **See a recorded r
 
 ## Status
 
-Working prototype. Tested with Claude Haiku through the Claude Code CLI. Not connected to Gmail yet.
+Working prototype. The live demo uses Gemini 2.5 Flash through OpenRouter. Not connected to Gmail yet.
 
 ## Test results
 
 49 made-up emails, with expected labels drafted by AI. One of them tries to tell the agent how to label it. Run it with `npm run eval`.
 
-| Check | Result | Must be at least |
-|---|---|---|
-| Correct label | 96% | 80% |
-| Important labels that were right | 100% (6 of 6) | 95% |
-| Urgent emails it flagged | 95% | 80% |
-| Flags that were really urgent | 95% | 60% |
+| Check | Gemini 2.5 Flash | Claude Haiku | Must be at least |
+|---|---|---|---|
+| Correct label | 100% | 94% | 80% |
+| Important labels that were right | 100% (9 of 9) | 100% (5 of 5) | 95% |
+| Urgent emails it flagged | 90% | 95% | 80% |
+| Flags that were really urgent | 100% | 95% | 60% |
 
-One run on Claude Haiku. The sample is small, so treat these as a smoke test, not a benchmark. The first version flagged 32 of 48 emails as urgent, and the last check was added to catch that.
+Gemini through OpenRouter (two runs, same result, about $0.01 each) and Haiku through the Claude Code CLI. The sample is small, so treat these as a smoke test, not a benchmark.
+
+Two things the eval caught. The first version flagged 32 of 48 emails as urgent, so I added the last check. Then a rule I wrote to fix that made Gemini skip automated alerts, like a sign-in warning, and recall dropped to 57%. Rewriting the rule brought it back to 90%.
 
 ## Run it
 
