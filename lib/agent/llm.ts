@@ -32,7 +32,7 @@ export async function callJson<T>(task: string, promptVersion: string, system: s
 type Raw = { text: string; usage: Omit<RunLogEntry, 'at' | 'task' | 'promptVersion' | 'ms'> };
 
 async function viaOpenRouter(system: string, user: string, key: string | undefined, model: string): Promise<Raw> {
-  if (!key) throw new Error('No AI key. Add your OpenRouter key under Settings, or open the recorded run.');
+  if (!key) throw new Error('No AI key. Add your OpenRouter key under AI key, or open the recorded run.');
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'X-Title': 'Inbox Agent' },

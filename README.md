@@ -17,7 +17,7 @@ More screenshots: [suggested labels](docs/screenshots/2-setup.png), [why it chos
 
 ## Try it
 
-Open the demo and press **See a recorded run** to look around without a key. To run it live, add your own [OpenRouter key](https://openrouter.ai/keys) under **AI key**. The key stays in your browser and is only sent with your own requests.
+Open the [demo](https://inbox-agent-tan.vercel.app) and press **See a recorded run** to look around without a key. To run it live, add your own [OpenRouter key](https://openrouter.ai/keys) under **AI key**. The key stays in your browser and is only sent with your own requests.
 
 ## Status
 
