@@ -68,7 +68,7 @@ async function viaClaudeCli(system: string, user: string): Promise<Raw> {
     text: j.result ?? '',
     usage: {
       model: `claude-cli/${model}`,
-      inputTokens: j.usage?.input_tokens ?? 0,
+      inputTokens: (j.usage?.input_tokens ?? 0) + (j.usage?.cache_creation_input_tokens ?? 0) + (j.usage?.cache_read_input_tokens ?? 0),
       outputTokens: j.usage?.output_tokens ?? 0,
       costUsd: j.total_cost_usd ?? null,
     },

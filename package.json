@@ -10,6 +10,7 @@
     "test": "tsx scripts/redact.test.ts && tsx scripts/rules.test.ts"
   },
   "dependencies": {
+    "lucide-react": "^1.61.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
