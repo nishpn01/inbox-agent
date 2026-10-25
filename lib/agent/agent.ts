@@ -31,7 +31,17 @@ export async function discover(emails: Email[]): Promise<{ result: DiscoverResul
     count: Object.values(assignments).filter((a) => a === c.name).length,
     exampleIds: (c.exampleIds ?? []).slice(0, 3),
   }));
-  return { result: { categories, senderRules: data.senderRules ?? [], questions: data.questions ?? [], assignments }, log: [log] };
+  // A domain is not a classifier: keep a proposed sender rule only if every sample email
+  // it matches landed in the same category. One client who sends both a complaint and a
+  // routine request must not get a rule.
+  const senderRules = (data.senderRules ?? []).filter((r) => {
+    const hits = emails.filter((e) => matchSenderRule(e, { categories: [], senderRules: [r] })).map((e) => assignments[e.id]);
+    return hits.length >= 2 && hits.every((a) => a === r.category);
+  });
+  // The user never sees email ids; models still write them ("(e04)") despite the prompt.
+  const ids = new Set(emails.map((e) => e.id));
+  const questions = (data.questions ?? []).map((q) => q.replace(/\s*\(?\b([\w-]+)\b\)?/g, (m, id) => (ids.has(id) ? '' : m)));
+  return { result: { categories, senderRules, questions, assignments }, log: [log] };
 }
 
 // ---------- Onboarding chat ----------
@@ -53,13 +63,12 @@ export async function classify(emails: Email[], taxonomy: Taxonomy, corrections:
   const log: RunLogEntry[] = [];
   const toModel: Email[] = [];
 
-  // A label the user fixed stays fixed. Then sender rules. Both run in code, before the model.
+  // A label the user fixed stays fixed, and skips the model. Everything else goes to the
+  // model, including sender-rule mail, so urgent mail from a ruled sender still gets flagged.
   const fixed = new Map(corrections.map((c) => [c.emailId, c.corrected]));
   for (const e of emails) {
-    const rule = matchSenderRule(e, taxonomy);
-    const fix = fixed.get(e.id);
-    if (fix && findCategory(taxonomy, fix)) decisions.push({ emailId: e.id, label: findCategory(taxonomy, fix)!.name, confidence: 1, reason: 'You set this label', needsEyes: false, source: 'correction' });
-    else if (rule) decisions.push({ emailId: e.id, label: rule.category, confidence: 1, reason: `Always rule: ${rule.match}`, needsEyes: false, source: 'sender-rule' });
+    const fix = findCategory(taxonomy, fixed.get(e.id));
+    if (fix) decisions.push({ emailId: e.id, label: fix.name, confidence: 1, reason: 'You set this label', needsEyes: false, source: 'correction' });
     else toModel.push(e);
   }
 
@@ -79,7 +88,12 @@ export async function classify(emails: Email[], taxonomy: Taxonomy, corrections:
     }
     if (result) log.push(result.log);
     const byId = new Map((result?.data.decisions ?? []).map((d) => [d.emailId, d]));
-    for (const e of batch) decisions.push(enforce(byId.get(e.id), e.id, taxonomy));
+    for (const e of batch) {
+      const d = enforce(byId.get(e.id), e.id, taxonomy);
+      const rule = matchSenderRule(e, taxonomy);
+      // The rule decides the label; the model still decides whether it needs a look.
+      decisions.push(rule ? { ...d, label: rule.category, confidence: 1, reason: `Always rule: ${rule.match}. ${d.reason}`.trim(), source: 'sender-rule' } : d);
+    }
   }
 
   const order = new Map(emails.map((e, i) => [e.id, i]));

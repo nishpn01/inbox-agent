@@ -6,7 +6,7 @@
 // project grew out of. The fixed job-search label tree is gone; the lessons stay.
 
 export const PROMPT_VERSION = {
-  discover: 'discover@3',
+  discover: 'discover@4',
   refine: 'refine@2',
   classify: 'classify@4',
   propose: 'propose@2',
@@ -29,7 +29,7 @@ Rules for the proposal:
 - Names are short (1-3 words) and plain. Descriptions are one sentence saying what belongs there, written so another person could apply it.
 - Order categories by priority: if an email could fit two, the one listed first should win. Put high-stakes and decision-bearing categories first, noise last.
 - Mark highStakes true for categories that need prompt human action and are rare (an unhappy client, a real meeting someone must attend). Usually 1-3 of them.
-- Propose a sender rule only when one sender clearly always belongs in one category.
+- Propose a sender rule only for automated senders (newsletters, job boards, notification systems) whose mail always belongs in one category. Never for a person or a client's domain: the same client can send a complaint one day and a routine request the next.
 - Ask 2-4 short questions where you were genuinely unsure (e.g. "These 4 look like vendor invoices. Separate category or part of Billing?"). The user cannot see email ids: refer to emails by sender name or subject, never by id. Write questions in plain words and call them labels, not categories.
 - Assign every sample email to one category, or "SKIP" if nothing fits.
 

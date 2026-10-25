@@ -13,7 +13,7 @@ This is a web version of the labeling agent I run on my own Gmail every morning.
 
 ![Labeled demo inbox](docs/screenshots/3-inbox.png)
 
-More screenshots: [suggested labels](docs/screenshots/2-setup.png), [why it chose a label](docs/screenshots/4-email-detail.png), [suggested changes after a fix](docs/screenshots/5-learn.png).
+More screenshots: [suggested labels](docs/screenshots/2-setup.png), [why it chose a label](docs/screenshots/4-email-detail.png), [a suggested change after a fix](docs/screenshots/5-learn.png).
 
 ## Try it
 

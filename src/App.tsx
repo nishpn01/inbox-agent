@@ -427,7 +427,7 @@ function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string
           }}
         >
           <label className="sr-only" htmlFor="chat-input">Message the agent</label>
-          <input id="chat-input" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder='For example: "Put anything from @brightpath under Escalation"' />
+          <input id="chat-input" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder='For example: "Always put emails from @hireloop under Job board alerts"' />
           <button className="primary icon-btn" aria-label="Send">
             <Send size={16} />
           </button>
