@@ -72,18 +72,18 @@ export default function App() {
   }
 
   const discoverNow = () =>
-    run('Reading the inbox', ['Reading senders and subjects', 'Reading message bodies', 'Grouping similar mail', 'Ordering categories by priority', 'Writing questions for you'], async () => {
+    run('Reading the inbox', ['Reading each email', 'Grouping similar emails', 'Suggesting labels', 'Noting what it is unsure about'], async () => {
       const { result, log } = await call<{ result: DiscoverResult }>('discover', { emails: INBOX });
       addLog(log);
       const taxonomy = { categories: result.categories.map(({ name, description, highStakes }) => ({ name, description, highStakes })), senderRules: result.senderRules };
       const intro =
-        `I read ${INBOX.length} emails and propose ${result.categories.length} categories, in priority order.` +
+        `I read ${INBOX.length} emails and suggest ${result.categories.length} labels.` +
         (result.questions.length ? `\n\nA few things I wasn't sure about:\n${result.questions.map((q) => `• ${q}`).join('\n')}` : '');
       patch({ discovery: result, taxonomy, approved: false, chat: [{ role: 'agent', text: intro }], decisions: [], proposals: [] });
     });
 
   const sendChat = (message: string) =>
-    run('Updating categories', ['Reading your request', 'Applying the change'], async () => {
+    run('Updating labels', ['Reading your request', 'Making the change'], async () => {
       const history = [...s.chat, { role: 'user' as const, text: message }];
       patch({ chat: history });
       const { reply, taxonomy, log } = await call<{ reply: string; taxonomy: Taxonomy }>('refine', { taxonomy: s.taxonomy, history: s.chat, message });
@@ -92,14 +92,14 @@ export default function App() {
     });
 
   const classifyNow = () =>
-    run(`Labeling ${INBOX.length} emails`, ['Applying sender rules', 'Reading each message', 'Checking against your corrections', 'Enforcing confidence bars'], async () => {
+    run(`Sorting ${INBOX.length} emails`, ['Reading each email', 'Picking one label, or none if unsure', 'Using your past fixes', 'Flagging anything urgent'], async () => {
       const { decisions, log } = await call<{ decisions: Decision[] }>('classify', { emails: INBOX, taxonomy: s.taxonomy, corrections: s.corrections });
       addLog(log);
       patch({ decisions });
     });
 
   const proposeNow = () =>
-    run('Reviewing your corrections', ['Looking for patterns', 'Drafting rule changes'], async () => {
+    run('Looking at your fixes', ['Finding patterns', 'Writing suggestions'], async () => {
       const { proposals, log } = await call<{ proposals: Proposal[] }>('propose', { taxonomy: s.taxonomy, corrections: s.corrections });
       addLog(log);
       patch({ proposals });
@@ -114,16 +114,16 @@ export default function App() {
   }
 
   const reset = () => {
-    if (confirm('Start over? This clears categories, labels and corrections.')) {
+    if (confirm('Start over? This clears the labels and your fixes.')) {
       setS(EMPTY);
       setTab('setup');
     }
   };
 
   const steps: { id: Tab; label: string; done: boolean; enabled: boolean }[] = [
-    { id: 'setup', label: 'Set up', done: s.approved, enabled: true },
+    { id: 'setup', label: 'Labels', done: s.approved, enabled: true },
     { id: 'inbox', label: 'Inbox', done: s.decisions.length > 0, enabled: s.approved },
-    { id: 'learn', label: 'Learn', done: false, enabled: s.approved },
+    { id: 'learn', label: 'Fixes', done: false, enabled: s.approved },
   ];
 
   return (
@@ -135,12 +135,12 @@ export default function App() {
           </span>
           <div>
             <h1>Inbox Agent</h1>
-            <p className="muted small">Learns your categories, labels with reasons, gets better from your corrections</p>
+            <p className="muted small">Sorts email into labels and learns from your fixes</p>
           </div>
         </div>
         <div className="top-actions">
-          <span className="badge" title="The only action this agent can take is applying a label">
-            <ShieldCheck size={14} /> Label-only
+          <span className="badge" title="It can add labels. It cannot archive, send or delete.">
+            <ShieldCheck size={14} /> Only adds labels
           </span>
           <button className="ghost icon-btn" onClick={reset} aria-label="Start over">
             <RotateCcw size={16} /> <span className="hide-sm">Start over</span>
@@ -157,14 +157,14 @@ export default function App() {
           </button>
         ))}
         <button className={`step log-link ${tab === 'log' ? 'active' : ''}`} onClick={() => setTab('log')}>
-          <Activity size={14} /> Run log
+          <Activity size={14} /> Log
           {s.log.length > 0 && <span className="count">{s.log.length}</span>}
         </button>
       </nav>
 
       {error && (
         <div className="alert" role="alert">
-          <strong>That didn't work.</strong> {error}
+          <strong>Something went wrong.</strong> {error}
           <button className="link" onClick={() => setError(null)}>Dismiss</button>
         </div>
       )}
@@ -200,7 +200,7 @@ export default function App() {
       </main>
 
       <footer className="muted small">
-        Demo data is a fictional staffing company, Harborline Staffing. Every person and address in it is invented. Contact details are stripped before any model call.
+        The demo emails are made up. Phone numbers, email addresses and links are removed before anything is sent to the AI.
       </footer>
     </div>
   );
@@ -218,7 +218,7 @@ function Working({ busy }: { busy: NonNullable<Busy> }) {
     <section className="working" aria-live="polite">
       <Loader2 className="spin" size={28} />
       <h2>{busy.label}…</h2>
-      <p className="muted small">In this step the agent is</p>
+      <p className="muted small">What it's doing</p>
       <ul className="progress">
         {busy.steps.map((st) => (
           <li key={st}>
@@ -233,16 +233,16 @@ function Working({ busy }: { busy: NonNullable<Busy> }) {
 
 function Intro({ onStart }: { onStart: () => void }) {
   const steps = [
-    { icon: <Sparkles size={18} />, title: 'Discover', text: 'Reads the inbox and proposes categories that fit it. No preset label list.' },
-    { icon: <Tags size={18} />, title: 'Agree on them', text: 'You refine the categories in plain language and mark which ones are high-stakes.' },
-    { icon: <Lightbulb size={18} />, title: 'Label and learn', text: 'Labels each email with a reason, skips what it is unsure of, and learns from your fixes.' },
+    { icon: <Sparkles size={18} />, title: 'It suggests labels', text: 'It reads the inbox first and suggests labels that fit it.' },
+    { icon: <Tags size={18} />, title: 'You adjust them', text: 'Rename, merge or add labels by asking in plain words.' },
+    { icon: <Lightbulb size={18} />, title: 'It sorts and learns', text: 'Every email gets a label and a reason. Fix one and it remembers.' },
   ];
   return (
     <section className="intro">
-      <p className="eyebrow">Demo · Harborline Staffing (fictional)</p>
-      <h2 className="hero">An inbox agent that learns your categories instead of shipping with them</h2>
+      <p className="eyebrow">Demo with made-up emails</p>
+      <h2 className="hero">Email sorting that fits your inbox</h2>
       <p className="lede muted">
-        The demo inbox has {INBOX.length} emails from a small staffing firm: candidates, clients, timesheets, invoices, job boards, and a phishing attempt. Start the agent and watch it work out the categories for itself.
+        This inbox has {INBOX.length} made-up emails from a small staffing company: candidates, clients, timesheets, invoices, job board alerts and one phishing email. The agent reads them, suggests labels, and sorts the inbox. You can change anything it gets wrong.
       </p>
       <div className="intro-steps">
         {steps.map((st, i) => (
@@ -258,10 +258,10 @@ function Intro({ onStart }: { onStart: () => void }) {
         ))}
       </div>
       <button className="primary big" onClick={onStart}>
-        Read the demo inbox <ArrowRight size={18} />
+        Start <ArrowRight size={18} />
       </button>
       <details className="peek">
-        <summary className="muted small">Peek at the inbox first</summary>
+        <summary className="muted small">See some of the emails first</summary>
         <ul>
           {INBOX.slice(0, 8).map((e) => (
             <li key={e.id}>
@@ -274,7 +274,7 @@ function Intro({ onStart }: { onStart: () => void }) {
   );
 }
 
-const SUGGESTIONS = ['Fewer categories, please', 'Which ones should be high-stakes?', 'Merge the two smallest categories'];
+const SUGGESTIONS = ['Use fewer labels', 'Which labels should be important?', 'Merge the two smallest labels'];
 
 function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string) => void; onToggleHighStakes: (n: string) => void; onApprove: () => void; onRediscover: () => void }) {
   const { s, color } = props;
@@ -295,11 +295,11 @@ function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string
       <div className="setup-cats">
         <div className="section-head">
           <div>
-            <h2>Proposed categories</h2>
-            <p className="muted small">In priority order: when two fit, the first one wins. High-stakes labels need more confidence.</p>
+            <h2>Suggested labels</h2>
+            <p className="muted small">If an email fits two labels, the higher one wins. The agent has to be more sure before using an important label.</p>
           </div>
           <button className="ghost small-btn" onClick={props.onRediscover}>
-            <RotateCcw size={14} /> Re-run
+            <RotateCcw size={14} /> Start again
           </button>
         </div>
         <ol className="cats">
@@ -309,11 +309,11 @@ function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string
                 <span className="rank tabular">{i + 1}</span>
                 <span className={`swatch c${color.get(c.name)}`} aria-hidden />
                 <strong>{c.name}</strong>
-                {info(c.name) && <span className="muted small tabular">{info(c.name)!.count} in sample</span>}
+                {info(c.name) && <span className="muted small tabular">{info(c.name)!.count} emails</span>}
                 <label className="switch">
                   <input type="checkbox" checked={c.highStakes} onChange={() => props.onToggleHighStakes(c.name)} />
                   <span className="track" aria-hidden />
-                  <span className="small">High-stakes</span>
+                  <span className="small">Important</span>
                 </label>
               </div>
               <p>{c.description}</p>
@@ -323,7 +323,7 @@ function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string
         </ol>
         {s.taxonomy!.senderRules.length > 0 && (
           <div className="rules small">
-            <strong>Sender rules</strong> <span className="muted">(always applied, before the model)</span>
+            <strong>Always</strong> <span className="muted">(emails from these senders get this label)</span>
             <ul>
               {s.taxonomy!.senderRules.map((r) => (
                 <li key={r.match + r.category}>
@@ -336,7 +336,7 @@ function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string
       </div>
 
       <aside className="chat card">
-        <h2>Talk to the agent</h2>
+        <h2>Ask for changes</h2>
         <div className="turns" ref={turnsRef}>
           {s.chat.map((t, i) => (
             <div key={i} className={`turn ${t.role}`}>
@@ -358,7 +358,7 @@ function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string
           }}
         >
           <label className="sr-only" htmlFor="chat-input">Message the agent</label>
-          <input id="chat-input" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder='e.g. "Anything from @brightpath goes to Client escalation"' />
+          <input id="chat-input" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder='For example: "Put anything from @brightpath under Escalation"' />
           <button className="primary icon-btn" aria-label="Send">
             <Send size={16} />
           </button>
@@ -367,10 +367,10 @@ function Setup(props: { s: State; color: Map<string, number>; onChat: (m: string
 
       <div className="approve-bar">
         <span className="muted small">
-          {s.taxonomy!.categories.length} categories · {s.taxonomy!.categories.filter((c) => c.highStakes).length} high-stakes
+          {s.taxonomy!.categories.length} labels · {s.taxonomy!.categories.filter((c) => c.highStakes).length} important
         </span>
         <button className="primary" onClick={props.onApprove} disabled={!s.taxonomy!.categories.length}>
-          {s.approved ? 'Back to the inbox' : 'Approve and label the inbox'} <ArrowRight size={16} />
+          {s.approved ? 'Back to the inbox' : 'Use these labels'} <ArrowRight size={16} />
         </button>
       </div>
     </section>
@@ -402,10 +402,10 @@ function InboxView(props: { s: State; color: Map<string, number>; onRun: () => v
     return (
       <section className="empty card">
         <InboxIcon size={28} className="muted" />
-        <h2>Categories approved. Ready to label {INBOX.length} emails.</h2>
-        <p className="muted">The agent gives every email one label or skips it, quotes the sentence it decided on, and puts anything urgent in a short "Needs your eyes" list. It never archives, sends or deletes.</p>
+        <h2>Labels saved. Ready to sort {INBOX.length} emails.</h2>
+        <p className="muted">Each email gets one label, or none if the agent isn't sure. Anything urgent shows up under Needs a look. It never archives, sends or deletes.</p>
         <button className="primary big" onClick={props.onRun}>
-          Run the agent <ArrowRight size={18} />
+          Sort the inbox <ArrowRight size={18} />
         </button>
       </section>
     );
@@ -415,22 +415,22 @@ function InboxView(props: { s: State; color: Map<string, number>; onRun: () => v
     <section>
       <div className="stats">
         <Stat label="Labeled" value={labeled} />
-        <Stat label="Skipped" value={s.decisions.length - labeled} hint="Left for a human" />
-        <Stat label="Needs your eyes" value={eyes} tone="warn" />
-        <Stat label="Cost of this run" value={runCost ? money(runCost) : '—'} hint={s.corrections.length ? `Using ${s.corrections.length} of your corrections` : 'No corrections yet'} />
+        <Stat label="No label" value={s.decisions.length - labeled} hint="Left for you" />
+        <Stat label="Needs a look" value={eyes} tone="warn" />
+        <Stat label="Cost" value={runCost ? money(runCost) : '—'} hint={s.corrections.length ? `Used ${s.corrections.length} of your fixes` : 'No fixes yet'} />
       </div>
 
       <div className="inbox">
         <aside className="labels" aria-label="Filter by label">
           <FilterBtn active={filter === 'all'} onClick={() => setFilter('all')} icon={<InboxIcon size={15} />} label="All mail" n={INBOX.length} />
-          <FilterBtn active={filter === 'eyes'} onClick={() => setFilter('eyes')} icon={<Eye size={15} />} label="Needs your eyes" n={eyes} />
-          <FilterBtn active={filter === 'skipped'} onClick={() => setFilter('skipped')} icon={<CircleSlash size={15} />} label="Skipped" n={s.decisions.length - labeled} />
+          <FilterBtn active={filter === 'eyes'} onClick={() => setFilter('eyes')} icon={<Eye size={15} />} label="Needs a look" n={eyes} />
+          <FilterBtn active={filter === 'skipped'} onClick={() => setFilter('skipped')} icon={<CircleSlash size={15} />} label="No label" n={s.decisions.length - labeled} />
           <div className="labels-head small muted">Labels</div>
           {s.taxonomy!.categories.map((c) => (
             <FilterBtn key={c.name} active={filter === c.name} onClick={() => setFilter(c.name)} icon={<span className={`swatch c${color.get(c.name)}`} />} label={c.name} n={count(c.name)} />
           ))}
           <button className="ghost small-btn rerun" onClick={props.onRun}>
-            <RotateCcw size={14} /> Run again
+            <RotateCcw size={14} /> Sort again
           </button>
         </aside>
 
@@ -450,7 +450,7 @@ function InboxView(props: { s: State; color: Map<string, number>; onRun: () => v
                   </span>
                   <span className="tags">
                     {d?.needsEyes && (
-                      <span className="flag" title={d.needsEyesReason ?? 'Needs your eyes'}>
+                      <span className="flag" title={d.needsEyesReason ?? 'Needs a look'}>
                         <Eye size={13} />
                       </span>
                     )}
@@ -463,8 +463,8 @@ function InboxView(props: { s: State; color: Map<string, number>; onRun: () => v
                     {d && (
                       <div className="why">
                         <div className="why-head small">
-                          <strong>{d.label ? `Why "${d.label}"` : 'Why it skipped'}</strong>
-                          {d.source === 'sender-rule' && <span className="muted">sender rule</span>}
+                          <strong>{d.label ? `Why ${d.label}` : 'Why no label'}</strong>
+                          {d.source === 'sender-rule' && <span className="muted">always rule</span>}
                           {d.source === 'model' && d.reason !== 'Corrected by you' && <Confidence value={d.confidence} high={!!cat?.highStakes} />}
                         </div>
                         <p>{d.reason}</p>
@@ -482,7 +482,7 @@ function InboxView(props: { s: State; color: Map<string, number>; onRun: () => v
                     {d && (
                       <div className="fix">
                         <label htmlFor={`fix-${e.id}`} className="small">
-                          Wrong label? Move it to
+                          Wrong label? Change to
                         </label>
                         <select id={`fix-${e.id}`} value="" onChange={(ev) => ev.target.value && props.onCorrect(e, d, ev.target.value)}>
                           <option value="">Choose a label…</option>
@@ -492,7 +492,7 @@ function InboxView(props: { s: State; color: Map<string, number>; onRun: () => v
                         </select>
                         {s.corrections.some((c) => c.emailId === e.id) && (
                           <button className="link small" onClick={props.onLearn}>
-                            Saved. See what the agent learns →
+                            Saved. See what it learned →
                           </button>
                         )}
                       </div>
@@ -509,11 +509,11 @@ function InboxView(props: { s: State; color: Map<string, number>; onRun: () => v
 }
 
 function LabelChip({ cat, idx }: { cat?: Category; idx?: number }) {
-  if (!cat) return <span className="chip skip">Skipped</span>;
+  if (!cat) return <span className="chip skip">No label</span>;
   return (
     <span className={`chip c${idx}`}>
       {cat.name}
-      {cat.highStakes && <span className="sr-only"> (high-stakes)</span>}
+      {cat.highStakes && <span className="sr-only"> (important)</span>}
     </span>
   );
 }
@@ -521,7 +521,7 @@ function LabelChip({ cat, idx }: { cat?: Category; idx?: number }) {
 function Confidence({ value, high }: { value: number; high: boolean }) {
   const bar = high ? 0.85 : 0.6;
   return (
-    <span className="conf" title={`Confidence ${Math.round(value * 100)}%. This label needs ${Math.round(bar * 100)}%.`}>
+    <span className="conf" title={`${Math.round(value * 100)}% sure. This label needs ${Math.round(bar * 100)}%.`}>
       <span className="conf-track">
         <span className="conf-fill" style={{ width: `${value * 100}%` }} />
         <span className="conf-bar" style={{ left: `${bar * 100}%` }} />
@@ -551,6 +551,8 @@ function Stat(props: { label: string; value: string | number; hint?: string; ton
   );
 }
 
+const KIND: Record<Proposal['kind'], string> = { edit_description: 'Change rule', add_sender_rule: 'New always rule', mark_high_stakes: 'Mark important', add_category: 'New label' };
+
 function Learn(props: { s: State; onPropose: () => void; onDecide: (p: Proposal, ok: boolean) => void }) {
   const { s } = props;
   const exportCases = () => {
@@ -564,17 +566,17 @@ function Learn(props: { s: State; onPropose: () => void; onDecide: (p: Proposal,
   return (
     <section className="learn">
       <div>
-        <h2>Your corrections</h2>
-        <p className="muted small">Each correction is used as an example on the next run, straight away. Bigger rule changes are proposed and wait for your approval.</p>
+        <h2>Your fixes</h2>
+        <p className="muted small">The agent uses each fix the next time it sorts. If it wants to change a label's rule, it asks first.</p>
         {s.corrections.length === 0 ? (
-          <div className="card empty-sm muted">No corrections yet. Open an email in the inbox and move it to the right label.</div>
+          <div className="card empty-sm muted">No fixes yet. Open an email in the inbox and change its label.</div>
         ) : (
           <ul className="corrections">
             {s.corrections.map((c) => (
               <li key={c.emailId} className="card">
                 <strong>{c.subject}</strong>
                 <span className="small">
-                  <span className="muted strike">{c.predicted ?? 'Skipped'}</span> <ArrowRight size={12} /> {c.corrected}
+                  <span className="muted strike">{c.predicted ?? 'No label'}</span> <ArrowRight size={12} /> {c.corrected}
                 </span>
               </li>
             ))}
@@ -582,22 +584,22 @@ function Learn(props: { s: State; onPropose: () => void; onDecide: (p: Proposal,
         )}
         {s.corrections.length > 0 && (
           <button className="ghost small-btn" onClick={exportCases}>
-            Export as eval cases
+            Download as test cases
           </button>
         )}
       </div>
       <div>
         <div className="section-head">
-          <h2>What the agent learned</h2>
+          <h2>Suggested changes</h2>
           <button className="primary small-btn" onClick={props.onPropose} disabled={!s.corrections.length}>
-            <Lightbulb size={14} /> Propose rule changes
+            <Lightbulb size={14} /> Ask for suggestions
           </button>
         </div>
-        {s.proposals.length === 0 && <div className="card empty-sm muted">{s.corrections.length ? 'Ask the agent to review your corrections.' : 'Proposals appear after you make a correction.'}</div>}
+        {s.proposals.length === 0 && <div className="card empty-sm muted">{s.corrections.length ? 'Ask the agent what it learned from your fixes.' : 'Suggestions show up after you fix a label.'}</div>}
         {s.proposals.map((p, i) => (
           <div key={i} className="card proposal">
             <div className="row small">
-              <span className="kind">{p.kind.replace(/_/g, ' ')}</span>
+              <span className="kind">{KIND[p.kind]}</span>
               <strong>{p.category}</strong>
             </div>
             {p.kind === 'edit_description' && current(p.category) ? (
@@ -629,10 +631,10 @@ function Log({ log }: { log: RunLogEntry[] }) {
   const tokens = log.reduce((t, l) => t + l.inputTokens + l.outputTokens, 0);
   return (
     <section>
-      <h2>Run log</h2>
-      <p className="muted small">Every model call, with the prompt version it used. Prompts change only after passing the eval.</p>
+      <h2>Log</h2>
+      <p className="muted small">Every call to the AI model, with its time and cost.</p>
       <div className="stats">
-        <Stat label="Model calls" value={log.length} />
+        <Stat label="AI calls" value={log.length} />
         <Stat label="Tokens" value={tokens.toLocaleString()} />
         <Stat label="Total cost" value={money(cost)} />
       </div>
