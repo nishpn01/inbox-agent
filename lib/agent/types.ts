@@ -37,7 +37,7 @@ export type Decision = {
   reason: string;
   needsEyes: boolean;
   needsEyesReason?: string;
-  source: 'sender-rule' | 'model';
+  source: 'correction' | 'sender-rule' | 'model';
 };
 
 export type Proposal = {

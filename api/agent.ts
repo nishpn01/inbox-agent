@@ -1,11 +1,19 @@
 import { classify, discover, proposeRules, refine } from '../lib/agent/agent.ts';
+import { withKey } from '../lib/agent/llm.ts';
 
 // One serverless endpoint: POST { action, ...args }. The browser holds the state
-// (taxonomy, corrections); the server holds the key and makes the model calls.
+// (taxonomy, corrections). A visitor's own OpenRouter key arrives in the
+// x-openrouter-key header and is used for that request only.
 
 const MAX_EMAILS = 100;
 
 export async function POST(req: Request): Promise<Response> {
+  const apiKey = req.headers.get('x-openrouter-key') ?? undefined;
+  const model = req.headers.get('x-openrouter-model') ?? undefined;
+  return withKey({ apiKey, model }, () => handle(req));
+}
+
+async function handle(req: Request): Promise<Response> {
   try {
     const body = await req.json();
     if (Array.isArray(body.emails) && body.emails.length > MAX_EMAILS) return json({ error: `At most ${MAX_EMAILS} emails per request` }, 400);

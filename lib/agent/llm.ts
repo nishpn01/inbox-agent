@@ -1,16 +1,28 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import type { RunLogEntry } from './types.ts';
 
 // One place for every model call: provider, model, JSON parsing, and the run log.
 // Provider is OpenRouter. LLM_PROVIDER=claude-cli is a local-dev fallback that runs
 // prompts through the Claude Code CLI so the agent can be tested before a key exists.
 
-const MODEL = process.env.OPENROUTER_MODEL ?? 'google/gemini-2.5-flash';
+const DEFAULT_MODEL = 'google/gemini-2.5-flash';
+
+// A visitor's own OpenRouter key, set per request by the API route. Request-scoped,
+// never stored or logged, so concurrent requests on one instance can't mix keys.
+type Byok = { apiKey?: string; model?: string };
+const byok = new AsyncLocalStorage<Byok>();
+export const withKey = <T>(cfg: Byok, fn: () => Promise<T>) => byok.run(cfg, fn);
 
 export type LlmResult<T> = { data: T; log: RunLogEntry };
 
 export async function callJson<T>(task: string, promptVersion: string, system: string, user: string): Promise<LlmResult<T>> {
   const started = Date.now();
-  const res = process.env.LLM_PROVIDER === 'claude-cli' ? await viaClaudeCli(system, user) : await viaOpenRouter(system, user);
+  const own = byok.getStore();
+  const res = own?.apiKey
+    ? await viaOpenRouter(system, user, own.apiKey, own.model || DEFAULT_MODEL)
+    : process.env.LLM_PROVIDER === 'claude-cli'
+      ? await viaClaudeCli(system, user)
+      : await viaOpenRouter(system, user, process.env.OPENROUTER_API_KEY, process.env.OPENROUTER_MODEL || DEFAULT_MODEL);
   return {
     data: parseJson<T>(res.text),
     log: { at: new Date().toISOString(), task, promptVersion, ms: Date.now() - started, ...res.usage },
@@ -19,14 +31,13 @@ export async function callJson<T>(task: string, promptVersion: string, system: s
 
 type Raw = { text: string; usage: Omit<RunLogEntry, 'at' | 'task' | 'promptVersion' | 'ms'> };
 
-async function viaOpenRouter(system: string, user: string): Promise<Raw> {
-  const key = process.env.OPENROUTER_API_KEY;
-  if (!key) throw new Error('OPENROUTER_API_KEY is not set. Add it to .env.local (see .env.example).');
+async function viaOpenRouter(system: string, user: string, key: string | undefined, model: string): Promise<Raw> {
+  if (!key) throw new Error('No AI key. Add your OpenRouter key under Settings, or open the recorded run.');
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'X-Title': 'Inbox Agent' },
     body: JSON.stringify({
-      model: MODEL,
+      model,
       temperature: 0,
       response_format: { type: 'json_object' },
       usage: { include: true },
@@ -41,7 +52,7 @@ async function viaOpenRouter(system: string, user: string): Promise<Raw> {
   return {
     text: j.choices?.[0]?.message?.content ?? '',
     usage: {
-      model: j.model ?? MODEL,
+      model: j.model ?? model,
       inputTokens: j.usage?.prompt_tokens ?? 0,
       outputTokens: j.usage?.completion_tokens ?? 0,
       costUsd: j.usage?.cost ?? null,

@@ -1,6 +1,7 @@
-import { Activity, ArrowRight, Check, CircleSlash, Eye, Inbox as InboxIcon, Lightbulb, Loader2, RotateCcw, Send, ShieldCheck, Sparkles, Tags } from 'lucide-react';
+import { Activity, ArrowRight, Check, CircleSlash, Eye, Inbox as InboxIcon, KeyRound, Lightbulb, Loader2, PlayCircle, RotateCcw, Send, ShieldCheck, Sparkles, Tags } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import demoInbox from '../data/demo-inbox.json';
+import sampleRun from '../data/sample-run.json';
 import { applyProposal, toActions } from '../lib/agent/rules.ts';
 import type { Category, ChatTurn, Correction, Decision, DiscoverResult, Email, Proposal, RunLogEntry, Taxonomy } from '../lib/agent/types.ts';
 
@@ -16,8 +17,20 @@ type State = {
   corrections: Correction[];
   proposals: Proposal[];
   log: RunLogEntry[];
+  recordedAt?: string;
 };
 const EMPTY: State = { discovery: null, taxonomy: null, approved: false, chat: [], decisions: [], corrections: [], proposals: [], log: [] };
+
+// The visitor's own OpenRouter key. Kept in this browser only and sent as a header with their requests.
+const KEY_STORE = 'inbox-agent:openrouter';
+type KeyCfg = { apiKey: string; model: string };
+function loadKey(): KeyCfg {
+  try {
+    return { apiKey: '', model: '', ...JSON.parse(localStorage.getItem(KEY_STORE) ?? '{}') };
+  } catch {
+    return { apiKey: '', model: '' };
+  }
+}
 
 function load(): State {
   try {
@@ -28,7 +41,11 @@ function load(): State {
 }
 
 async function call<T>(action: string, args: object): Promise<T & { log: RunLogEntry[] }> {
-  const r = await fetch('/api/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...args }) });
+  const { apiKey, model } = loadKey();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (apiKey) headers['x-openrouter-key'] = apiKey;
+  if (model) headers['x-openrouter-model'] = model;
+  const r = await fetch('/api/agent', { method: 'POST', headers, body: JSON.stringify({ action, ...args }) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error ?? `Request failed (${r.status})`);
   return j;
@@ -46,6 +63,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(() => (load().approved ? 'inbox' : 'setup'));
   const [busy, setBusy] = useState<Busy>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showKey, setShowKey] = useState(false);
 
   useEffect(() => {
     try {
@@ -139,6 +157,9 @@ export default function App() {
           </div>
         </div>
         <div className="top-actions">
+          <button className="ghost icon-btn" onClick={() => setShowKey((v) => !v)} aria-expanded={showKey}>
+            <KeyRound size={16} /> <span className="hide-sm">AI key</span>
+          </button>
           <span className="badge" title="It can add labels. It cannot archive, send or delete.">
             <ShieldCheck size={14} /> Only adds labels
           </span>
@@ -147,6 +168,8 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {showKey && <KeyPanel onClose={() => setShowKey(false)} />}
 
       <nav className="stepper" aria-label="Steps">
         {steps.map((st, i) => (
@@ -161,6 +184,12 @@ export default function App() {
           {s.log.length > 0 && <span className="count">{s.log.length}</span>}
         </button>
       </nav>
+
+      {s.recordedAt && (
+        <div className="note small">
+          This is a recorded run from {new Date(s.recordedAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}. To run it live, add your own OpenRouter key under AI key and press Start over.
+        </div>
+      )}
 
       {error && (
         <div className="alert" role="alert">
@@ -188,7 +217,15 @@ export default function App() {
                   onRediscover={discoverNow}
                 />
               ) : (
-                <Intro onStart={discoverNow} />
+                <Intro
+                  onStart={discoverNow}
+                  onRecorded={() => {
+                    const r = sampleRun as unknown as Pick<State, 'discovery' | 'taxonomy' | 'decisions' | 'log'> & { recordedAt: string };
+                    const intro = `I read ${INBOX.length} emails and suggest ${r.taxonomy!.categories.length} labels.` + (r.discovery!.questions.length ? `\n\nA few things I wasn't sure about:\n${r.discovery!.questions.map((q) => `• ${q}`).join('\n')}` : '');
+                    setS({ ...EMPTY, ...r, approved: true, chat: [{ role: 'agent', text: intro }] });
+                    setTab('inbox');
+                  }}
+                />
               ))}
             {tab === 'inbox' && s.taxonomy && <InboxView s={s} color={color} onRun={classifyNow} onCorrect={correct} onLearn={() => setTab('learn')} />}
             {tab === 'learn' && s.taxonomy && (
@@ -202,6 +239,32 @@ export default function App() {
       <footer className="muted small">
         The demo emails are made up. Phone numbers, email addresses and links are removed before anything is sent to the AI.
       </footer>
+    </div>
+  );
+}
+
+function KeyPanel({ onClose }: { onClose: () => void }) {
+  const [cfg, setCfg] = useState<KeyCfg>(loadKey);
+  const save = () => {
+    try {
+      localStorage.setItem(KEY_STORE, JSON.stringify({ apiKey: cfg.apiKey.trim(), model: cfg.model.trim() }));
+    } catch {
+      /* private window */
+    }
+    onClose();
+  };
+  return (
+    <div className="card key-panel">
+      <h2>Use your own AI key</h2>
+      <p className="muted small">Get one at openrouter.ai/keys. It stays in this browser and is only sent with your own requests. Nothing is stored on the server.</p>
+      <label className="small" htmlFor="or-key">OpenRouter key</label>
+      <input id="or-key" type="password" autoComplete="off" value={cfg.apiKey} onChange={(e) => setCfg({ ...cfg, apiKey: e.target.value })} placeholder="sk-or-..." />
+      <label className="small" htmlFor="or-model">Model (optional)</label>
+      <input id="or-model" value={cfg.model} onChange={(e) => setCfg({ ...cfg, model: e.target.value })} placeholder="google/gemini-2.5-flash" />
+      <div className="row">
+        <button className="primary small-btn" onClick={save}>Save</button>
+        <button className="ghost small-btn" onClick={() => setCfg({ apiKey: '', model: '' })}>Clear</button>
+      </div>
     </div>
   );
 }
@@ -231,7 +294,7 @@ function Working({ busy }: { busy: NonNullable<Busy> }) {
   );
 }
 
-function Intro({ onStart }: { onStart: () => void }) {
+function Intro({ onStart, onRecorded }: { onStart: () => void; onRecorded: () => void }) {
   const steps = [
     { icon: <Sparkles size={18} />, title: 'It suggests labels', text: 'It reads the inbox first and suggests labels that fit it.' },
     { icon: <Tags size={18} />, title: 'You adjust them', text: 'Rename, merge or add labels by asking in plain words.' },
@@ -257,9 +320,15 @@ function Intro({ onStart }: { onStart: () => void }) {
           </div>
         ))}
       </div>
-      <button className="primary big" onClick={onStart}>
-        Start <ArrowRight size={18} />
-      </button>
+      <div className="row">
+        <button className="primary big" onClick={onStart}>
+          Start <ArrowRight size={18} />
+        </button>
+        <button className="ghost big-ghost" onClick={onRecorded}>
+          <PlayCircle size={18} /> See a recorded run
+        </button>
+      </div>
+      <p className="muted small">Running it live needs an OpenRouter key (add it under AI key). The recorded run needs nothing.</p>
       <details className="peek">
         <summary className="muted small">See some of the emails first</summary>
         <ul>

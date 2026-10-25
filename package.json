@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "eval": "tsx scripts/eval.ts",
+    "record": "tsx scripts/record-sample.ts",
     "test": "tsx scripts/redact.test.ts && tsx scripts/rules.test.ts"
   },
   "dependencies": {

@@ -10,7 +10,7 @@ function api(): Plugin {
         const chunks: Buffer[] = [];
         for await (const c of req) chunks.push(c as Buffer);
         const { POST } = await server.ssrLoadModule('/api/agent.ts');
-        const r: Response = await POST(new Request('http://local/api/agent', { method: 'POST', body: Buffer.concat(chunks) }));
+        const r: Response = await POST(new Request('http://local/api/agent', { method: 'POST', headers: req.headers as Record<string, string>, body: Buffer.concat(chunks) }));
         res.statusCode = r.status;
         res.setHeader('Content-Type', 'application/json');
         res.end(await r.text());

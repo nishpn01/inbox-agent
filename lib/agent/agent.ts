@@ -1,7 +1,7 @@
 import { callJson } from './llm.ts';
 import { CLASSIFY_SYSTEM, DISCOVER_SYSTEM, PROMPT_VERSION, PROPOSE_SYSTEM, REFINE_SYSTEM } from './prompts.ts';
 import { redact, senderForModel } from './redact.ts';
-import { cleanTaxonomy, enforce, matchSenderRule } from './rules.ts';
+import { cleanTaxonomy, enforce, findCategory, matchSenderRule } from './rules.ts';
 import type { ChatTurn, Correction, Decision, DiscoverResult, Email, Proposal, RunLogEntry, Taxonomy } from './types.ts';
 
 const BATCH = 12;
@@ -53,10 +53,13 @@ export async function classify(emails: Email[], taxonomy: Taxonomy, corrections:
   const log: RunLogEntry[] = [];
   const toModel: Email[] = [];
 
-  // Sender rules are unconditional and run in code, before the model sees anything.
+  // A label the user fixed stays fixed. Then sender rules. Both run in code, before the model.
+  const fixed = new Map(corrections.map((c) => [c.emailId, c.corrected]));
   for (const e of emails) {
     const rule = matchSenderRule(e, taxonomy);
-    if (rule) decisions.push({ emailId: e.id, label: rule.category, confidence: 1, reason: `Sender rule: ${rule.match}`, needsEyes: false, source: 'sender-rule' });
+    const fix = fixed.get(e.id);
+    if (fix && findCategory(taxonomy, fix)) decisions.push({ emailId: e.id, label: findCategory(taxonomy, fix)!.name, confidence: 1, reason: 'You set this label', needsEyes: false, source: 'correction' });
+    else if (rule) decisions.push({ emailId: e.id, label: rule.category, confidence: 1, reason: `Always rule: ${rule.match}`, needsEyes: false, source: 'sender-rule' });
     else toModel.push(e);
   }
 
@@ -64,14 +67,18 @@ export async function classify(emails: Email[], taxonomy: Taxonomy, corrections:
 
   for (let i = 0; i < toModel.length; i += BATCH) {
     const batch = toModel.slice(i, i + BATCH);
-    const { data, log: entry } = await callJson<{ decisions: Omit<Decision, 'source'>[] }>(
-      'classify',
-      PROMPT_VERSION.classify,
-      CLASSIFY_SYSTEM,
-      JSON.stringify({ categories: taxonomy.categories, pastCorrections: examples, emails: batch.map((e) => forModel(e)) }),
-    );
-    log.push(entry);
-    const byId = new Map((data.decisions ?? []).map((d) => [d.emailId, d]));
+    const input = JSON.stringify({ categories: taxonomy.categories, pastCorrections: examples, emails: batch.map((e) => forModel(e)) });
+    let result: Awaited<ReturnType<typeof callJson<{ decisions: Omit<Decision, 'source'>[] }>>> | null = null;
+    // One bad batch (timeout, broken JSON) shouldn't sink the run: retry once, then leave that batch for a human.
+    for (let attempt = 0; attempt < 2 && !result; attempt++) {
+      try {
+        result = await callJson('classify', PROMPT_VERSION.classify, CLASSIFY_SYSTEM, input);
+      } catch (err) {
+        if (attempt === 1) console.error('classify batch failed', err);
+      }
+    }
+    if (result) log.push(result.log);
+    const byId = new Map((result?.data.decisions ?? []).map((d) => [d.emailId, d]));
     for (const e of batch) decisions.push(enforce(byId.get(e.id), e.id, taxonomy));
   }
 

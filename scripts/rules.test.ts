@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { applyProposal, enforce, matchSenderRule, toActions } from '../lib/agent/rules.ts';
+import { applyProposal, enforce, findCategory, matchSenderRule, toActions } from '../lib/agent/rules.ts';
 import type { Taxonomy } from '../lib/agent/types.ts';
 
 const t: Taxonomy = {
@@ -16,6 +16,8 @@ assert.equal(enforce(d('Escalations', 0.7), 'x', t).label, null, 'high-stakes ne
 assert.equal(enforce(d('Escalations', 0.7), 'x', t).needsEyes, true, 'a high-stakes skip is flagged');
 assert.equal(enforce(d('Escalations', 0.9), 'x', t).label, 'Escalations');
 assert.equal(enforce(d('Made Up', 0.99), 'x', t).label, null, 'unknown labels become skips');
+assert.equal(enforce(d('  billing ', 0.7), 'x', t).label, 'Billing', 'case and spacing drift still matches');
+assert.equal(findCategory(t, 'escalations')?.name, 'Escalations');
 assert.equal(enforce(undefined, 'x', t).needsEyes, true, 'missing decisions are flagged');
 
 const email = { id: 'x', from: { name: 'P', email: 'ap@payroll.example' }, date: '', subject: '', body: '' };

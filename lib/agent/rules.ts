@@ -9,11 +9,18 @@ export const MIN_CONFIDENCE_HIGH_STAKES = 0.85;
 export function cleanTaxonomy(t: Taxonomy): Taxonomy {
   const seen = new Set<string>();
   const categories = (t.categories ?? [])
-    .filter((c) => c?.name?.trim() && !seen.has(c.name) && seen.add(c.name))
-    .map((c) => ({ name: c.name.trim(), description: (c.description ?? '').trim(), highStakes: !!c.highStakes }));
+    .map((c) => ({ name: (c?.name ?? '').trim(), description: (c?.description ?? '').trim(), highStakes: !!c?.highStakes }))
+    .filter((c) => c.name && !seen.has(norm(c.name)) && seen.add(norm(c.name)));
   const names = new Set(categories.map((c) => c.name));
   const senderRules = (t.senderRules ?? []).filter((r) => r?.match?.trim() && names.has(r.category));
   return { categories, senderRules };
+}
+
+const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
+
+/** Models drift on case and spacing ("client request" vs "Client request"); match loosely, store exactly. */
+export function findCategory(t: Taxonomy, label: string | null | undefined) {
+  return label ? t.categories.find((c) => norm(c.name) === norm(label)) : undefined;
 }
 
 export function matchSenderRule(email: Email, t: Taxonomy) {
@@ -27,7 +34,7 @@ export function matchSenderRule(email: Email, t: Taxonomy) {
 /** The model suggests; code decides. Unknown labels and low confidence become skips. */
 export function enforce(d: Omit<Decision, 'source'> | undefined, emailId: string, t: Taxonomy): Decision {
   if (!d) return { emailId, label: null, confidence: 0, reason: 'No decision returned', needsEyes: true, needsEyesReason: 'Agent returned nothing for this email', source: 'model' };
-  const cat = t.categories.find((c) => c.name === d.label);
+  const cat = findCategory(t, d.label);
   const confidence = Math.max(0, Math.min(1, Number(d.confidence) || 0));
   const base = { emailId, confidence, reason: d.reason ?? '', needsEyes: !!d.needsEyes, needsEyesReason: d.needsEyesReason || undefined, source: 'model' as const };
   if (!d.label) return { ...base, label: null };
