@@ -38,6 +38,10 @@ Gemini through OpenRouter (two runs, same result, about $0.01 each) and Haiku th
 
 Two things the eval caught. The first version flagged 32 of 48 emails as urgent, so I added the last check. Then a rule I wrote to fix that made Gemini skip automated alerts, like a sign-in warning, and recall dropped to 57%. Rewriting the rule brought it back to 90%.
 
+## What's next
+
+Not built yet: run it on a daily schedule against a real inbox, and post the report where the team already works, like Slack. Set it up once, and it runs every morning and gets better with each correction.
+
 ## Run it
 
 ```bash
