@@ -1,62 +1,87 @@
 # Inbox Agent
 
-Sorts email into labels that fit your inbox, and learns from your fixes. It only adds labels. It never archives, sends or deletes.
+An AI agent that sorts an inbox into labels that fit it, explains every label, and learns from your corrections.
 
-This is a web version of the labeling agent I run on my own Gmail every morning. Mine has labels hard-coded for a job search. This one reads the inbox first and suggests its own, so it works for any inbox. The demo runs on 49 made-up emails from a small staffing company.
+**[Try the live demo](https://inbox-agent-tan.vercel.app)** · Press "See a recorded run" to look around without an API key.
+
+![The agent sorting a staffing company's inbox](docs/screenshots/3-inbox.png)
+
+## Why I built it
+
+I run a version of this agent on my own Gmail every morning. Important emails, like interview invites and assessments, used to get lost under job alerts and newsletters. Now every email gets a label, and I can see what needs me at a glance.
+
+My version has labels hard-coded for a job search. This one reads the inbox first and suggests its own labels, so it works for any team. The demo runs on 49 made-up emails from a small staffing company.
 
 ## How it works
 
-1. It reads the inbox and suggests labels.
-2. You adjust them by asking in plain words.
-3. It labels every email and says why. Anything it isn't sure about stays unlabeled for you.
-4. When you fix a label, it uses that fix next time. If it wants to change a rule, it asks first.
+1. **It suggests labels.** The agent reads the inbox and proposes labels that fit it, in priority order. It also asks about anything it wasn't sure of.
+2. **You adjust them.** Rename, merge or add labels by asking in plain words. You also choose which labels are important.
+3. **It sorts the inbox.** Each email gets one label and the sentence the label was based on. Urgent emails are flagged. Anything it isn't sure about stays unlabeled for you.
+4. **It learns.** A label you fix stays fixed. The agent uses your fixes as examples next time, and it asks before changing any of its rules.
 
-![Labeled demo inbox](docs/screenshots/3-inbox.png)
+## Results
 
-More screenshots: [suggested labels](docs/screenshots/2-setup.png), [why it chose a label](docs/screenshots/4-email-detail.png), [a suggested change after a fix](docs/screenshots/5-learn.png).
+Tested on all 49 emails against a set of expected labels. I re-run these checks after every prompt change.
 
-## Try it
-
-Open the [demo](https://inbox-agent-tan.vercel.app) and press **See a recorded run** to look around without a key. To run it live, add your own [OpenRouter key](https://openrouter.ai/keys) under **AI key**. The key stays in your browser and is only sent with your own requests.
-
-## Status
-
-Working prototype. The live demo uses Gemini 2.5 Flash through OpenRouter. Not connected to Gmail yet.
-
-## Test results
-
-49 made-up emails, with expected labels drafted by AI. One of them tries to tell the agent how to label it. Run it with `npm run eval`.
-
-| Check | Gemini 2.5 Flash | Claude Haiku | Must be at least |
+| Check | Gemini 2.5 Flash | Claude Haiku | Must reach |
 |---|---|---|---|
 | Correct label | 100% | 94% | 80% |
-| Important labels that were right | 100% (9 of 9) | 100% (5 of 5) | 95% |
-| Urgent emails it flagged | 90% | 95% | 80% |
-| Flags that were really urgent | 100% | 95% | 60% |
+| Important labels that were right | 9 of 9 | 6 of 6 | 95% |
+| Urgent emails it flagged | 90% | 100% | 80% |
+| Flags that were really urgent | 95% | 91% | 60% |
 
-Gemini through OpenRouter (two runs, same result, about $0.01 each) and Haiku through the Claude Code CLI. The sample is small, so treat these as a smoke test, not a benchmark.
+A full run on Gemini costs about $0.01. Raw output: [docs/eval-results.md](docs/eval-results.md).
 
-Two things the eval caught. The first version flagged 32 of 48 emails as urgent, so I added the last check. Then a rule I wrote to fix that made Gemini skip automated alerts, like a sign-in warning, and recall dropped to 57%. Rewriting the rule brought it back to 90%.
+The checks caught two real problems. The first version flagged 32 of 48 emails as urgent, which makes the flag useless, so I added the last check. Then the rule I wrote to fix it made Gemini skip automated alerts, like a sign-in warning, and in one run only 57% of urgent emails were flagged. Rewriting the rule brought that back to 90%.
+
+## Design decisions
+
+- **It can only add labels.** Archive, send and delete don't exist in the code, so no prompt can trigger them. A wrong label takes seconds to fix. A wrong archive is easy to miss.
+- **The AI suggests, the code decides.** A label that doesn't exist, or one the AI isn't confident about, becomes "no label." Important labels need more confidence than the rest.
+- **Emails are treated as data.** One test email tells the AI how to label it. The agent ignores the instruction and flags the email.
+- **Private details stay out of the AI.** Phone numbers, email addresses and links are removed before any email is sent to the model.
+- **Visitors use their own key.** The live demo holds no API key. A visitor's OpenRouter key stays in their browser and is sent only with their own requests.
+
+## Built with
+
+| | |
+|---|---|
+| Agent | TypeScript, prompts with version numbers, an eval script with pass/fail gates |
+| Models | Gemini 2.5 Flash through OpenRouter (live demo), Claude Haiku through the Claude Code CLI (local testing) |
+| App | React 19, Vite, one Vercel serverless function |
+| Tools | Claude Code, GitHub, Vercel |
+
+I designed the agent and built it with Claude Code over a weekend. The labeling rules come from the agent I run on my own inbox.
+
+## Limitations
+
+- **Small test set.** 49 made-up emails, and the expected labels were drafted by AI. It catches regressions, but it isn't a benchmark.
+- **Scores vary between runs.** The same model can move a few points from one run to the next.
+- **Only the sorting is tested.** The eval doesn't measure how good the suggested labels are, and that part varies more between models.
+- **Confidence is the model's own estimate.** The thresholds of 60% and 85% are judgment calls, not measured.
+- **Not connected to a real inbox yet.** The demo uses sample data.
 
 ## What's next
 
-Not built yet: run it on a daily schedule against a real inbox, and post the report where the team already works, like Slack. Set it up once, and it runs every morning and gets better with each correction.
+Connect it to Gmail and run it on a daily schedule, with the morning report posted where the team already works, like Slack.
 
-## Run it
+## Run it locally
 
 ```bash
 npm install
 cp .env.example .env.local   # add an OpenRouter key, or set LLM_PROVIDER=claude-cli
-npm run dev
+npm run dev                  # the app
+npm run eval                 # the checks above
+npm test                     # guardrail tests
 ```
 
-## Layout
-
-| Path | Contents |
+| Path | What's there |
 |---|---|
-| `lib/agent/` | The agent: prompts, rules, and the AI call |
+| `lib/agent/` | The agent: prompts, rules and the AI call |
 | `api/agent.ts` | The one server endpoint |
 | `src/` | The web app |
-| `data/` | Demo emails and expected labels |
-| `scripts/` | Tests, eval, and the script that records the sample run |
-| `docs/architecture.md` | How it's built |
+| `data/` | Demo emails, expected labels and the recorded run |
+| `scripts/` | Eval, tests, and the script that records the sample run |
+| `docs/` | [How it's built](docs/architecture.md), eval output and screenshots |
+
+MIT License · [Pranish (Nish) Pakwan](https://linkedin.com/in/nish-p01)
