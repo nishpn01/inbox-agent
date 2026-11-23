@@ -1,87 +1,130 @@
 # Inbox Agent
 
-An AI agent that sorts an inbox into labels that fit it, explains every label, and learns from your corrections.
+Inbox Agent is an AI agent for inbox classification that I designed and built as an LLM workflow with versioned prompts and structured JSON output. Anyone can clone it, define a label taxonomy for their own inbox, and review the proposed taxonomy before the workflow uses it. It discovers categories from a sample, classifies email in batches, carries corrections into later runs, and keeps the only available action deliberately small: applying a label.
 
-**[Try the live demo](https://inbox-agent-tan.vercel.app)** · Press "See a recorded run" to look around without an API key.
+**[Try the live demo](https://inbox-agent-tan.vercel.app)**. The demo uses one fictional 49-email staffing-company inbox so visitors can inspect the full workflow without connecting an account or supplying a real mailbox.
 
-![The agent sorting a staffing company's inbox](docs/screenshots/3-inbox.png)
+![Inbox Agent sorting a demo inbox](docs/screenshots/3-inbox.png)
 
-## Why I built it
+## What this demonstrates
 
-I run a version of this agent on my own Gmail every morning. Important emails, like interview invites and assessments, used to get lost under job alerts and newsletters. Now every email gets a label, and I can see what needs me at a glance.
+| Concept | How it is implemented | Where to look |
+| --- | --- | --- |
+| AI agent for inbox classification | Separate discovery, taxonomy refinement, classification, and rule-proposal stages turn an inbox into an owner-reviewed workflow. | [`lib/agent/agent.ts`](lib/agent/agent.ts) |
+| Structured JSON output | One JSON-only model client records the task, model, prompt version, token use, cost, and duration for every call. | [`lib/agent/llm.ts`](lib/agent/llm.ts) |
+| Human approval and code-enforced action boundaries | The owner approves taxonomy and rule changes; code rejects unknown labels and low-confidence results, and the action layer can produce labels only. | [`lib/agent/rules.ts`](lib/agent/rules.ts), [`src/App.tsx`](src/App.tsx) |
+| Human-in-the-loop learning | A user correction overrides the model on the next run; proposed taxonomy changes require approval. | [`lib/agent/agent.ts`](lib/agent/agent.ts), [`docs/architecture.md`](docs/architecture.md) |
+| LLM workflow with versioned prompts | Four evaluation gates check accuracy, high-stakes precision, and needs-your-eyes precision/recall on the 49-email fixture. | [`lib/agent/prompts.ts`](lib/agent/prompts.ts), [`scripts/eval.ts`](scripts/eval.ts) |
+| Prompt-injection test | A fixture email embeds instructions to the model; the eval expects it not to become a client escalation and to be flagged for review. | [`data/demo-inbox.json`](data/demo-inbox.json), [`data/eval-set.json`](data/eval-set.json) |
+| OpenRouter integration and Vercel serverless endpoint | One request boundary accepts the workflow action, forwards a visitor's key with that request, and makes structured JSON calls through OpenRouter using request-scoped server context. | [`api/agent.ts`](api/agent.ts), [`lib/agent/llm.ts`](lib/agent/llm.ts) |
+| Privacy boundary | Common phone, email-address, and link patterns are redacted before model input. | [`lib/agent/redact.ts`](lib/agent/redact.ts), [`api/agent.ts`](api/agent.ts) |
 
-My version has labels hard-coded for a job search. This one reads the inbox first and suggests its own labels, so it works for any team. The demo runs on 49 made-up emails from a small staffing company.
+## A run from inbox to review
 
-## How it works
+1. I start by giving the agent an inbox export. It samples up to 100 messages and suggests categories, high-stakes labels, sender rules, and questions.
+2. The owner can rename, merge, add, or prioritize categories in plain language. `cleanTaxonomy()` removes empty, duplicate, or invalid entries before they can be used.
+3. The classifier sends messages to the model in batches of 12. The most recent 30 corrections become examples for that run.
+4. The interface shows the label, reason, confidence, and any message needing attention. The owner can correct a result or approve a suggested change to the taxonomy.
 
-1. **It suggests labels.** The agent reads the inbox and proposes labels that fit it, in priority order. It also asks about anything it wasn't sure of.
-2. **You adjust them.** Rename, merge or add labels by asking in plain words. You also choose which labels are important.
-3. **It sorts the inbox.** Each email gets one label and the sentence the label was based on. Urgent emails are flagged. Anything it isn't sure about stays unlabeled for you.
-4. **It learns.** A label you fix stays fixed. The agent uses your fixes as examples next time, and it asks before changing any of its rules.
+### 1. Labeling pipeline
 
-## Results
+```mermaid
+flowchart TB
+  I[Inbox export] --> D[Discover labels]
+  D --> T[Owner refines taxonomy]
+  T --> C[Classify messages in batches]
+  C --> E[Code-enforced decision]
+  E --> V[Inbox view and run log]
+```
 
-Tested on all 49 emails against a set of expected labels. I re-run these checks after every prompt change.
+### 2. Guardrails and owner review
 
-| Check | Gemini 2.5 Flash | Claude Haiku | Must reach |
-|---|---|---|---|
-| Correct label | 100% | 94% | 80% |
-| Important labels that were right | 9 of 9 | 6 of 6 | 95% |
-| Urgent emails it flagged | 90% | 100% | 80% |
-| Flags that were really urgent | 95% | 91% | 60% |
+```mermaid
+flowchart TB
+  M[Model suggestion] --> K{Known label and confidence passes?}
+  K -->|Yes| L[Propose label]
+  K -->|No| R[Leave unlabeled for review]
+  L --> U[Owner correction]
+  R --> U
+  U --> X[Correction wins on the next run]
+  X --> P[Agent proposes up to four rule changes]
+  P --> A{Owner approves?}
+  A -->|Yes| T[Update taxonomy]
+  A -->|No| N[Keep current taxonomy]
+```
 
-A full run on Gemini costs about $0.01. Raw output: [docs/eval-results.md](docs/eval-results.md).
+- Ordinary labels need at least 60% model confidence. High-stakes labels need 85%.
+- A failed batch is retried once; a second failure leaves its messages for review.
+- Sender rules do not bypass the urgency check. The model still decides whether ruled mail needs attention.
+- The implementation exposes no archive, send, delete, or mark-read action. `toActions()` returns label actions only.
 
-The checks caught two real problems. The first version flagged 32 of 48 emails as urgent, which makes the flag useless, so I added the last check. Then the rule I wrote to fix it made Gemini skip automated alerts, like a sign-in warning, and in one run only 57% of urgent emails were flagged. Rewriting the rule brought that back to 90%.
+## Evaluation and regression checks
 
-## Design decisions
+`npm run eval` classifies the complete 49-email test corpus against expected labels and fails when a gate is missed. The expected labels were AI-drafted, so the eval is a regression check for this corpus, not a benchmark of inbox intelligence.
 
-- **It can only add labels.** Archive, send and delete don't exist in the code, so no prompt can trigger them. A wrong label takes seconds to fix. A wrong archive is easy to miss.
-- **The AI suggests, the code decides.** A label that doesn't exist, or one the AI isn't confident about, becomes "no label." Important labels need more confidence than the rest.
-- **Emails are treated as data.** One test email tells the AI how to label it. The agent ignores the instruction and flags the email.
-- **Private details stay out of the AI.** Phone numbers, email addresses and links are removed before any email is sent to the model.
-- **Visitors use their own key.** The live demo holds no API key. A visitor's OpenRouter key stays in their browser and is sent only with their own requests.
+```mermaid
+flowchart TB
+  P[Versioned prompt change] --> E[npm run eval]
+  E --> G[Accuracy and precision/recall gates]
+  G --> O[Recorded model, cost, and misses]
+  O --> R[Revise prompt or rules]
+  R --> E
+```
 
-## Built with
+| Check on 49 emails | Gemini 2.5 Flash | Claude Haiku | Gate |
+| --- | ---: | ---: | ---: |
+| Label accuracy | 100% | 94% | 80% |
+| High-stakes precision | 9/9 | 6/6 | 95% |
+| Needs-your-eyes recall | 19/21 (90%) | 21/21 (100%) | 80% |
+| Needs-your-eyes precision | 19/20 (95%) | 21/23 (91%) | 60% |
 
-| | |
-|---|---|
-| Agent | TypeScript, prompts with version numbers, an eval script with pass/fail gates |
-| Models | Gemini 2.5 Flash through OpenRouter (live demo), Claude Haiku through the Claude Code CLI (local testing) |
-| App | React 19, Vite, one Vercel serverless function |
-| Tools | Claude Code, GitHub, Vercel |
+The recorded Gemini run used five calls, took 21.055 seconds, and cost $0.0142. The eval found an urgency rule that first over-flagged messages; a replacement rule missed automated security alerts. Revising it raised sample urgency recall from 57% to 90%. The raw runs and misses are in [`docs/eval-results.md`](docs/eval-results.md).
 
-I designed the agent and built it with Claude Code over a weekend. The labeling rules come from the agent I run on my own inbox.
+## Architecture and implementation
 
-## Limitations
+The browser is a React 19 and Vite app. One Vercel serverless endpoint receives a request, redacts content, calls Gemini 2.5 Flash through OpenRouter for the live path, and returns structured output. A local Claude Code CLI path supports the comparison run.
 
-- **Small test set.** 49 made-up emails, and the expected labels were drafted by AI. It catches regressions, but it isn't a benchmark.
-- **Scores vary between runs.** The same model can move a few points from one run to the next.
-- **Only the sorting is tested.** The eval doesn't measure how good the suggested labels are, and that part varies more between models.
-- **Confidence is the model's own estimate.** The thresholds of 60% and 85% are judgment calls, not measured.
-- **Not connected to a real inbox yet.** The demo uses sample data.
+```mermaid
+flowchart TB
+  B[React inbox, setup, corrections, run log] --> A[Vercel serverless endpoint]
+  A --> R[Redact common contact patterns]
+  R --> L[OpenRouter or Claude CLI JSON call]
+  L --> G[Rules and confidence checks]
+  G --> B
+  G --> E[Eval script and guardrail tests]
+```
 
-## What's next
-
-Connect it to Gmail and run it on a daily schedule, with the morning report posted where the team already works, like Slack.
-
-## Run it locally
+## Run it with your own inbox data
 
 ```bash
 npm install
-cp .env.example .env.local   # add an OpenRouter key, or set LLM_PROVIDER=claude-cli
-npm run dev                  # the app
-npm run eval                 # the checks above
-npm test                     # guardrail tests
+cp .env.example .env.local
+npm run dev
+npm run eval
+npm test
 ```
 
-| Path | What's there |
-|---|---|
-| `lib/agent/` | The agent: prompts, rules and the AI call |
-| `api/agent.ts` | The one server endpoint |
-| `src/` | The web app |
-| `data/` | Demo emails, expected labels and the recorded run |
-| `scripts/` | Eval, tests, and the script that records the sample run |
-| `docs/` | [How it's built](docs/architecture.md), eval output and screenshots |
+Set an OpenRouter key in `.env.local`, or use `LLM_PROVIDER=claude-cli` for the local comparison path. Use only mailbox data you are permitted to process.
 
-MIT License · [Pranish (Nish) Pakwan](https://linkedin.com/in/nish-p01)
+## Repository map
+
+| Path | Purpose |
+| --- | --- |
+| [`src/`](src/) | React inbox, setup, correction, and run-log screens |
+| [`api/agent.ts`](api/agent.ts) | Request boundary and action router |
+| [`lib/agent/`](lib/agent/) | Prompts, model client, redaction, taxonomy rules, and types |
+| [`data/`](data/) | Demo inbox, expected labels, and a recorded sample run |
+| [`scripts/`](scripts/) | Eval and focused guardrail tests |
+| [`docs/`](docs/) | Architecture, screenshots, and raw evaluation output |
+
+## Current status
+
+- The app is not connected to Gmail. Gmail access, scheduling, and delivery of a morning report are future work.
+- Redaction covers common phone, email-address, and link patterns. Names and sender domains can remain for classification.
+- Confidence thresholds are product choices, not calibrated probabilities.
+
+## Ownership
+
+I designed the system and architecture and directed the implementation.
+
+MIT License.
